@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
+from src.api.tmdb_client import filmleri_getir, veriyi_ayikla
 
 views = Blueprint('views', __name__)
 
@@ -33,9 +34,32 @@ def dashboard():
     # Güvenlik Kontrolü: Bu adamın bilekliği var mı?
     if 'kullanici' in session:
         aktif_isim = session['kullanici']
-        return f"<h1>Hosgeldin {aktif_isim}! Burasi sadece giris yapanlarin gordugu ozel sayfa. <br><br> <a href='/logout'>Cikis Yap</a></h1>"
+        
+        try:
+            # 1. Arkadaşının API koduyla 1. sayfa popüler filmleri çekiyoruz
+            ham_veri = filmleri_getir(1)
+            
+            # 2. Gelen karmaşık veriyi yine arkadaşının koduyla temizliyoruz
+            filmler = veriyi_ayikla(ham_veri["results"])
+            
+            # 3. Ekrana basılacak basit HTML iskeletini oluşturuyoruz
+            html_cikti = f"<h1>Hosgeldin {aktif_isim}! Iste TMDB Populer Filmler:</h1>"
+            html_cikti += "<a href='/logout'>Cikis Yap</a><hr><ul>"
+            
+            # 4. Gelen temiz filmleri tek tek listeye (<li>) ekliyoruz
+            for film in filmler:
+                html_cikti += f"<li><b>{film['film_adi']}</b> - TMDB Puanı: {film['puan']}</li>"
+                
+            html_cikti += "</ul>"
+            
+            return html_cikti
+            
+        except Exception as e:
+            # Eğer internet yoksa veya API bozuksa site çökmesin, hata mesajı versin
+            return f"<h1>Hosgeldin {aktif_isim}!</h1><p>Filmler yuklenirken bir hata olustu: {e}</p><a href='/logout'>Cikis Yap</a>"
+            
     else:
-        # Bilekliği yoksa (linki ezberleyip kaçak girmeye çalışıyorsa) login'e kışla
+        # Bilekliği yoksa login'e kışla
         return redirect(url_for('views.login'))
 
 # 4. YENİ: ÇIKIŞ YAPMA (LOGOUT)
