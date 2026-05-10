@@ -154,7 +154,7 @@ def film_detay(id):
                            film_id=id, 
                            film=film_data,
                            cinerate_puan=cinerate_puan,
-                           current_user=kullanici, 
+                           current_user=user_obj, 
                            is_admin=is_admin)
 
 @views.route('/api/filmler/<int:film_id>/yorumlar', methods=['GET', 'POST'])

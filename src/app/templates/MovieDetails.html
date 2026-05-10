@@ -274,7 +274,7 @@
 </nav>
 <script>
 const FILM_ID = {{ film_id }};
-const CURRENT_USER = "{{ current_user }}";
+const CURRENT_USER = "{{ current_user.username if current_user else '' }}";
 const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
 
 document.addEventListener('DOMContentLoaded', () => {
