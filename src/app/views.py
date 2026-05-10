@@ -5,8 +5,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.app.crud import kullanici_getir_username, kullanici_getir_email, kullanici_olustur, tum_kullanicilari_getir
-from src.api.tmdb_client import populer_filmleri_cek
+from src.api.tmdb_client import populer_filmleri_cek, film_detay_cek
 from src.app.models import db, Review, Vote, Reply, User, Movie
+from sqlalchemy.sql import func
 from flask import jsonify
 
 views = Blueprint('views', __name__)
@@ -130,7 +131,31 @@ def film_detay(id):
     kullanici = session.get('kullanici', '')
     user_obj = kullanici_getir_username(kullanici) if kullanici else None
     is_admin = getattr(user_obj, 'is_admin', False) if user_obj else False
-    return render_template("MovieDetails.html", film_id=id, current_user=kullanici, is_admin=is_admin)
+    
+    # Fetch movie details from TMDB
+    film_data = film_detay_cek(id)
+    if not film_data:
+        film_data = {
+            "id": id,
+            "film_adi": "Bilinmeyen Film",
+            "ozet": "Film bilgisi bulunamadı.",
+            "afis_yolu": None,
+            "arka_plan": None,
+            "puan": 0.0,
+            "sure": 0,
+            "turler": []
+        }
+        
+    # Calculate average rating from Cinerate reviews
+    cinerate_avg = db.session.query(func.avg(Review.rating)).filter(Review.movie_id == id, Review.rating.isnot(None)).scalar()
+    cinerate_puan = round(cinerate_avg, 1) if cinerate_avg is not None else 0.0
+        
+    return render_template("MovieDetails.html", 
+                           film_id=id, 
+                           film=film_data,
+                           cinerate_puan=cinerate_puan,
+                           current_user=kullanici, 
+                           is_admin=is_admin)
 
 @views.route('/api/filmler/<int:film_id>/yorumlar', methods=['GET', 'POST'])
 def api_yorumlar(film_id):
@@ -150,7 +175,8 @@ def api_yorumlar(film_id):
                 "begeniler": r.likes,
                 "yanitlar": replies,
                 "upvotes": upvotes,
-                "downvotes": downvotes
+                "downvotes": downvotes,
+                "rating": r.rating
             })
         return jsonify({"yorumlar": yorumlar_data})
         
@@ -159,11 +185,12 @@ def api_yorumlar(film_id):
             return jsonify({"hata": "Giriş yapmalısınız"}), 401
         data = request.json
         metin = data.get("metin")
+        puan = data.get("rating")
         user = kullanici_getir_username(session['kullanici'])
         if not metin:
             return jsonify({"hata": "Metin boş olamaz"}), 400
         
-        yeni_yorum = Review(rating=None, comment=metin, user_id=user.id, movie_id=film_id)
+        yeni_yorum = Review(rating=puan, comment=metin, user_id=user.id, movie_id=film_id)
         db.session.add(yeni_yorum)
         db.session.commit()
         
@@ -176,7 +203,8 @@ def api_yorumlar(film_id):
             "begeniler": 0,
             "yanitlar": [],
             "upvotes": 0,
-            "downvotes": 0
+            "downvotes": 0,
+            "rating": puan
         }), 201
 
 @views.route('/api/yorumlar/<int:yorum_id>', methods=['POST', 'PUT', 'DELETE'])
