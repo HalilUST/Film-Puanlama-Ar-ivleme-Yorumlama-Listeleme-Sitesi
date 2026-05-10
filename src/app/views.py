@@ -187,6 +187,10 @@ def api_yorumlar(film_id):
         metin = data.get("metin")
         puan = data.get("rating")
         user = kullanici_getir_username(session['kullanici'])
+        if not user:
+            session.clear()
+            return jsonify({"hata": "Oturumunuz geçersiz, lütfen tekrar giriş yapın."}), 401
+            
         if not metin:
             return jsonify({"hata": "Metin boş olamaz"}), 400
         
@@ -213,6 +217,10 @@ def api_yorum_islem(yorum_id):
         return jsonify({"hata": "Giriş yapmalısınız"}), 401
     
     user = kullanici_getir_username(session['kullanici'])
+    if not user:
+        session.clear()
+        return jsonify({"hata": "Oturumunuz geçersiz, lütfen tekrar giriş yapın."}), 401
+        
     action = request.args.get('action')
     yorum = Review.query.get_or_404(yorum_id)
     

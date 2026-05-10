@@ -346,23 +346,31 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReviewBtn.disabled = true;
         try {
             if (isEditing) {
-                await fetch(`/api/yorumlar/${isEditing}`, {
+                const response = await fetch(`/api/yorumlar/${isEditing}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ metin: text, rating: selectedRating })
                 });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.hata || 'Yorum güncellenemedi');
+                }
             } else {
-                await fetch(`/api/filmler/${FILM_ID}/yorumlar`, {
+                const response = await fetch(`/api/filmler/${FILM_ID}/yorumlar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ metin: text, rating: selectedRating })
                 });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.hata || 'Yorum eklenemedi');
+                }
             }
             reviewFormContainer.classList.add('hidden');
             resetForm();
             loadReviews();
         } catch (e) {
-            alert('Bir hata oluştu');
+            alert(e.message || 'Bir hata oluştu');
         } finally {
             submitReviewBtn.disabled = false;
         }
@@ -371,10 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadReviews() {
         try {
             const res = await fetch(`/api/filmler/${FILM_ID}/yorumlar`);
+            if (!res.ok) throw new Error('Yorumlar yüklenemedi');
             const data = await res.json();
             renderReviews(data.yorumlar);
         } catch (e) {
-            reviewsContainer.innerHTML = '<p class="text-error">Yorumlar yüklenemedi.</p>';
+            reviewsContainer.innerHTML = '<p class="text-error text-center p-8">Yorumlar yüklenirken bir hata oluştu veya bağlantı koptu.</p>';
         }
     }
 
@@ -419,15 +428,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!text) return alert('Yanıt boş olamaz.');
         
         try {
-            await fetch(`/api/yorumlar/${id}?action=yanit`, {
+            const response = await fetch(`/api/yorumlar/${id}?action=yanit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ metin: text })
             });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.hata || 'Yanıt eklenemedi');
+            }
             inputEl.value = '';
             loadReviews();
         } catch(e) {
-            alert('Hata oluştu');
+            alert(e.message || 'Hata oluştu');
         }
     };
 
