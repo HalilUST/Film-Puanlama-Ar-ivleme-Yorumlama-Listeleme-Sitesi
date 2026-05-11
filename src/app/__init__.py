@@ -25,7 +25,7 @@ def create_app():
         db.create_all()
         # Safe migration: add is_spoiler column if it doesn't exist
         try:
-            db.session.execute(db.text("ALTER TABLE review ADD COLUMN is_spoiler BOOLEAN DEFAULT 0 NOT NULL"))
+            db.session.execute(db.text("ALTER TABLE review ADD COLUMN is_spoiler BOOLEAN DEFAULT FALSE NOT NULL"))
             db.session.commit()
         except Exception:
             db.session.rollback()
