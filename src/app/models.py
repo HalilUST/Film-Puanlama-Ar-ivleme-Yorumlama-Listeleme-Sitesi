@@ -34,6 +34,7 @@ class Review(db.Model):
     comment = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     likes = db.Column(db.Integer, default=0)
+    is_spoiler = db.Column(db.Boolean, default=False, nullable=False)
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'), nullable=False)

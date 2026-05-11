@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}CineRate - Settings{% endblock %}
+
+{% block content %}
+<main class="pt-24 px-8 md:px-16 pb-24 max-w-2xl mx-auto min-h-screen w-full">
+    <div class="mb-12 mt-8 xl:mt-0">
+        <h1 class="text-4xl font-headline font-bold text-primary mb-4 italic">Settings</h1>
+        <p class="text-slate-400 font-body">Manage your profile and preferences.</p>
+    </div>
+
+    <div class="bg-surface-container/30 p-8 rounded-2xl border border-white/5 shadow-2xl">
+        <form method="POST" action="/settings" class="space-y-6">
+            <div class="flex items-center gap-6 mb-8">
+                <div class="w-20 h-20 rounded-full border-2 border-primary/30 overflow-hidden shrink-0">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=111316&color=ffc24a&size=150" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h3 class="text-xl font-headline font-bold text-white">{{ current_user.username|title }}</h3>
+                    <p class="text-sm text-slate-400">{{ current_user.email }}</p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] font-label uppercase tracking-[0.15em] text-slate-400">Display Name</label>
+                <input class="w-full bg-[#1a1c1f] border-none rounded-xl py-4 px-5 text-on-surface focus:ring-1 focus:ring-primary/40 transition-all font-body text-sm" name="username" value="{{ current_user.username }}" type="text" required/>
+            </div>
+
+            <div class="pt-6">
+                <button class="cinematic-gradient w-full py-4 rounded-xl text-slate-900 font-bold text-sm tracking-widest uppercase shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" type="submit">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

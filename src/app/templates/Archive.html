@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}CineRate - Archive{% endblock %}
+
+{% block content %}
+<main class="pt-24 px-8 md:px-16 pb-24 max-w-7xl mx-auto min-h-screen w-full">
+    <div class="mb-12 mt-8 xl:mt-0">
+        <h1 class="text-4xl md:text-5xl font-headline font-bold text-primary mb-4 italic">Archive</h1>
+        <p class="text-slate-400 font-body">Every film you've reviewed and experienced.</p>
+    </div>
+
+    {% if movies %}
+    <section class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {% for movie in movies %}
+        <article class="group relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg ring-1 ring-white/10 hover:ring-primary/50 transition-all duration-300 hover:-translate-y-1">
+            <a href="/film/{{ movie.tmdb_id }}">
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <h3 class="font-headline text-sm font-bold tracking-tight text-white truncate">{{ movie.title }}</h3>
+                </div>
+            </a>
+        </article>
+        {% endfor %}
+    </section>
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-20 text-center bg-surface-container/30 rounded-2xl border border-white/5">
+        <span class="material-symbols-outlined text-6xl text-slate-600 mb-4">video_library</span>
+        <h2 class="text-2xl font-headline font-bold text-slate-300 mb-2">Empty Archive</h2>
+        <p class="text-slate-500 mb-6">Your archive grows as you review films. Go rate some movies!</p>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

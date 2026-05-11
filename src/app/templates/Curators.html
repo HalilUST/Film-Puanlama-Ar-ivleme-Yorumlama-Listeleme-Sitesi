@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}CineRate - Curators{% endblock %}
+
+{% block content %}
+<main class="pt-24 px-8 md:px-16 pb-24 max-w-5xl mx-auto min-h-screen w-full">
+    <div class="mb-12 mt-8 xl:mt-0 text-center xl:text-left">
+        <h1 class="text-4xl md:text-5xl font-headline font-bold text-primary mb-4 italic">Top Curators</h1>
+        <p class="text-slate-400 font-body">The most dedicated voices in the CineRate community.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for user in users %}
+        <div class="bg-surface-container/40 p-6 rounded-2xl border border-white/5 flex items-center gap-6 hover:bg-surface-container/60 transition-colors">
+            <div class="w-16 h-16 rounded-full border-2 border-primary/20 overflow-hidden shrink-0 relative">
+                <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=111316&color=ffc24a&size=100" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <h3 class="font-headline font-bold text-lg">{{ user.username|title }}</h3>
+                <p class="text-xs text-primary font-bold uppercase tracking-widest mt-1">{% if user.is_admin %}Admin{% else %}Member{% endif %}</p>
+                <div class="text-slate-400 text-sm mt-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">edit_document</span>
+                    {{ user.reviews|length }} Reviews
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

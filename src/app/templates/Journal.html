@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}CineRate - Journal{% endblock %}
+
+{% block content %}
+<main class="pt-24 px-8 md:px-16 pb-24 max-w-4xl mx-auto min-h-screen w-full">
+    <div class="mb-12 mt-8 xl:mt-0">
+        <h1 class="text-4xl md:text-5xl font-headline font-bold text-primary mb-4 italic">Journal</h1>
+        <p class="text-slate-400 font-body">Your personal cinematic diary.</p>
+    </div>
+
+    {% if reviews %}
+    <div class="space-y-8">
+        {% for review in reviews %}
+        <article class="bg-surface-container/50 p-6 rounded-2xl border border-white/5 shadow-lg flex gap-6">
+            <a href="/film/{{ review.movie.tmdb_id }}" class="shrink-0 w-24 h-36 rounded-lg overflow-hidden group">
+                <img src="https://image.tmdb.org/t/p/w200{{ review.movie.poster_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+            </a>
+            <div class="flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <a href="/film/{{ review.movie.tmdb_id }}" class="text-xl font-headline font-bold hover:text-primary transition-colors">{{ review.movie.title }}</a>
+                        <div class="text-xs text-slate-500 uppercase tracking-widest mt-1">{{ review.date_posted.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    {% if review.rating %}
+                    <div class="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-bold">
+                        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                        {{ review.rating }}
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="text-slate-300 mt-4 leading-relaxed font-body">"{{ review.comment }}"</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-20 text-center bg-surface-container/30 rounded-2xl border border-white/5">
+        <span class="material-symbols-outlined text-6xl text-slate-600 mb-4">edit_document</span>
+        <h2 class="text-2xl font-headline font-bold text-slate-300 mb-2">No Entries Yet</h2>
+        <p class="text-slate-500 mb-6">Start documenting your cinematic journey by writing your first review.</p>
+        <a href="/dashboard" class="px-8 py-3 bg-primary text-slate-900 font-bold rounded-lg hover:scale-105 transition-transform">Find a Film</a>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

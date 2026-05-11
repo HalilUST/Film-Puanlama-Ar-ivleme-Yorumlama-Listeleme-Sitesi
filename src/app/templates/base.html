@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>{% block title %}CineRate{% endblock %}</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: { primary: "#ffc24a", surface: "#111316", "on-surface": "#e2e2e6", "surface-container": "#1e2023", "surface-container-high": "#282a2d", "surface-container-highest": "#333538", "outline-variant": "#504533" },
+                fontFamily: { headline: ["Noto Serif"], body: ["Manrope"], label: ["Manrope"] }
+            }
+        }
+    }
+</script>
+<style>
+    body { background-color: #111316; color: #e2e2e6; font-family: 'Manrope', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .cinematic-gradient { background: linear-gradient(135deg, #ffc24a 0%, #e5a50a 100%); }
+    .glass-panel { background: rgba(17, 19, 22, 0.7); backdrop-filter: blur(20px); }
+
+    /* Login prompt modal */
+    .login-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .login-modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .login-modal { background: #1e2023; border: 1px solid rgba(255, 194, 74, 0.15); border-radius: 1.5rem; padding: 3rem; max-width: 28rem; width: 90%; text-align: center; transform: scale(0.9) translateY(20px); transition: transform 0.3s ease; }
+    .login-modal-overlay.active .login-modal { transform: scale(1) translateY(0); }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary selection:text-slate-900">
+
+<!-- Mobile Header & Hamburger -->
+<header class="xl:hidden fixed top-0 w-full z-50 glass-panel flex justify-between items-center px-6 h-20 border-b border-outline-variant/10">
+    <div class="flex items-center gap-4">
+        <button id="mobile-menu-btn" class="text-slate-300 hover:text-primary transition-colors p-2 -ml-2 rounded-lg">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <a href="/dashboard" class="font-serif italic font-bold tracking-tighter text-primary text-2xl">CineRate</a>
+    </div>
+    {% if current_user %}
+    <a href="/profile" class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+        <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=111316&color=ffc24a" class="w-full h-full object-cover">
+    </a>
+    {% else %}
+    <a href="/login" class="px-5 py-2 cinematic-gradient rounded-full text-slate-900 font-bold text-xs uppercase tracking-wider hover:scale-105 transition-transform">Giriş Yap</a>
+    {% endif %}
+</header>
+
+<!-- Sidebar Overlay (Mobile) -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden xl:hidden transition-opacity opacity-0"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="fixed xl:flex w-72 flex-col h-screen top-0 left-0 border-r border-outline-variant/10 z-50 glass-panel transition-transform duration-300 -translate-x-full xl:translate-x-0">
+    <!-- Close button (Mobile) -->
+    <button id="close-sidebar-btn" class="xl:hidden absolute top-6 right-6 text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-3xl">close</span>
+    </button>
+
+    <div class="p-8 pb-4 flex items-center justify-between">
+        <a href="/dashboard" class="font-serif italic font-bold tracking-tighter text-primary text-3xl">CineRate</a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mx-6 mb-6 relative" id="search-wrapper">
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg pointer-events-none">search</span>
+            <input id="sidebar-search" type="text" autocomplete="off" placeholder="Film ara..."
+                class="w-full bg-black/20 border border-white/8 focus:border-primary/30 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 outline-none transition-all placeholder-slate-600 focus:shadow-[0_0_0_2px_rgba(255,194,74,0.08)]">
+            <button id="search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <!-- Live Results Dropdown -->
+        <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-[#1a1c1f] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-[60] max-h-[60vh] overflow-y-auto">
+            <div id="search-results-list" class="p-2"></div>
+            <a id="search-all-link" href="/search" class="hidden items-center justify-center gap-2 px-4 py-3 text-xs font-bold text-primary uppercase tracking-wider border-t border-white/5 hover:bg-primary/5 transition-colors">
+                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>Tüm Sonuçları Gör
+            </a>
+        </div>
+    </div>
+
+    <!-- User Mini Profile or Login Prompt in Sidebar -->
+    {% if current_user %}
+    <a href="/profile" class="mx-6 p-4 rounded-2xl bg-surface-container-high/50 border border-outline-variant/10 flex items-center gap-4 hover:bg-surface-container-highest transition-colors group mb-8">
+        <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-primary/20">
+            <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=111316&color=ffc24a" class="w-full h-full object-cover">
+        </div>
+        <div class="overflow-hidden">
+            <p class="text-sm font-bold text-slate-200 group-hover:text-primary transition-colors truncate">{{ current_user.username }}</p>
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 truncate">{% if current_user.is_admin %}Admin{% else %}Member{% endif %}</p>
+        </div>
+    </a>
+    {% else %}
+    <div class="mx-6 p-5 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 mb-8 text-center">
+        <span class="material-symbols-outlined text-primary text-4xl mb-2 block">account_circle</span>
+        <p class="text-slate-300 text-sm font-bold mb-1">Hoşgeldiniz!</p>
+        <p class="text-slate-500 text-xs mb-4">Giriş yaparak tüm özelliklere erişin.</p>
+        <a href="/login" class="block w-full py-3 cinematic-gradient rounded-xl text-slate-900 font-bold text-sm tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all">Giriş Yap / Kayıt Ol</a>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="flex flex-col gap-2 relative z-10 flex-grow overflow-y-auto pb-8">
+        <!-- Public pages: Feed & Curators -->
+        <a class="flex items-center px-6 py-4 {% if request.path == '/dashboard' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/dashboard">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform" {% if request.path == '/dashboard' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>movie</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Feed</span>
+        </a>
+
+        {% if current_user and current_user.is_admin %}
+        <a class="flex items-center px-6 py-4 {% if request.path == '/admin' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/admin">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">admin_panel_settings</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Admin Paneli</span>
+        </a>
+        {% endif %}
+
+        <a class="flex items-center px-6 py-4 {% if request.path == '/curators' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/curators">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">group</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Curators</span>
+        </a>
+
+        <div class="h-px bg-outline-variant/10 mx-6 my-4"></div>
+
+        <!-- Personal pages: require login -->
+        {% if current_user %}
+        <a class="flex items-center px-6 py-4 {% if request.path == '/watchlist' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/watchlist">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">bookmark</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Watchlist</span>
+        </a>
+
+        <a class="flex items-center px-6 py-4 {% if request.path == '/journal' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/journal">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">edit_document</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Journal</span>
+        </a>
+
+        <a class="flex items-center px-6 py-4 {% if request.path == '/archive' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/archive">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">inventory_2</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Archive</span>
+        </a>
+        {% else %}
+        <!-- Guest: show these but with login prompt -->
+        <a class="flex items-center px-6 py-4 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item cursor-pointer" onclick="showLoginModal()">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">bookmark</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Watchlist</span>
+            <span class="material-symbols-outlined ml-auto text-primary/40 text-[16px]">lock</span>
+        </a>
+
+        <a class="flex items-center px-6 py-4 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item cursor-pointer" onclick="showLoginModal()">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">edit_document</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Journal</span>
+            <span class="material-symbols-outlined ml-auto text-primary/40 text-[16px]">lock</span>
+        </a>
+
+        <a class="flex items-center px-6 py-4 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item cursor-pointer" onclick="showLoginModal()">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">inventory_2</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Archive</span>
+            <span class="material-symbols-outlined ml-auto text-primary/40 text-[16px]">lock</span>
+        </a>
+        {% endif %}
+
+        <div class="mt-auto">
+            <div class="h-px bg-outline-variant/10 mx-6 my-4"></div>
+            {% if current_user %}
+            <a class="flex items-center px-6 py-4 {% if request.path == '/settings' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/settings">
+                <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">settings</span>
+                <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Settings</span>
+            </a>
+            <a class="flex items-center px-6 py-4 text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all group/item" href="/logout">
+                <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">logout</span>
+                <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Log Out</span>
+            </a>
+            {% else %}
+            <a class="flex items-center px-6 py-4 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item cursor-pointer" onclick="showLoginModal()">
+                <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">settings</span>
+                <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Settings</span>
+                <span class="material-symbols-outlined ml-auto text-primary/40 text-[16px]">lock</span>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+</aside>
+
+<!-- Login Prompt Modal -->
+<div id="login-modal" class="login-modal-overlay" onclick="if(event.target===this)hideLoginModal()">
+    <div class="login-modal">
+        <div class="w-20 h-20 mx-auto mb-6 rounded-full cinematic-gradient flex items-center justify-center">
+            <span class="material-symbols-outlined text-slate-900 text-4xl">movie_filter</span>
+        </div>
+        <h3 class="text-2xl font-headline font-bold text-white mb-3">Üyelik Gerekli</h3>
+        <p class="text-slate-400 text-sm mb-8 leading-relaxed">Bu özelliği kullanabilmek için giriş yapmanız veya ücretsiz bir hesap oluşturmanız gerekiyor.</p>
+        <div class="flex flex-col gap-3">
+            <a href="/login" class="w-full py-4 cinematic-gradient rounded-xl text-slate-900 font-bold text-sm tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all block">Giriş Yap</a>
+            <a href="/register" class="w-full py-4 bg-surface-container-high rounded-xl text-slate-300 font-bold text-sm tracking-wider hover:bg-surface-container-highest hover:text-white transition-all block">Kayıt Ol</a>
+        </div>
+        <button onclick="hideLoginModal()" class="mt-6 text-slate-500 hover:text-slate-300 text-sm transition-colors">Daha sonra</button>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="xl:pl-72 flex flex-col min-h-screen transition-all duration-300">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- Mobile Sidebar + Login Modal Logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const openBtn = document.getElementById('mobile-menu-btn');
+        const closeBtn = document.getElementById('close-sidebar-btn');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+            document.body.style.overflow = '';
+        }
+
+        if(openBtn) openBtn.addEventListener('click', openSidebar);
+        if(closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if(overlay) overlay.addEventListener('click', closeSidebar);
+    });
+
+    function showLoginModal() {
+        document.getElementById('login-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoginModal() {
+        document.getElementById('login-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Live Search
+    (function() {
+        const input = document.getElementById('sidebar-search');
+        const dropdown = document.getElementById('search-dropdown');
+        const resultsList = document.getElementById('search-results-list');
+        const allLink = document.getElementById('search-all-link');
+        const clearBtn = document.getElementById('search-clear');
+        if (!input) return;
+
+        let timer = null;
+
+        input.addEventListener('input', () => {
+            const q = input.value.trim();
+            clearBtn.classList.toggle('hidden', q.length === 0);
+            if (q.length < 2) { dropdown.classList.add('hidden'); return; }
+            clearTimeout(timer);
+            timer = setTimeout(() => fetchResults(q), 350);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); window.location.href = `/search?q=${encodeURIComponent(input.value.trim())}`; }
+        });
+
+        clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.classList.add('hidden'); dropdown.classList.add('hidden'); input.focus(); });
+
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('search-wrapper').contains(e.target)) dropdown.classList.add('hidden');
+        });
+
+        async function fetchResults(q) {
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                renderDropdown(data.results || [], q);
+            } catch(e) { dropdown.classList.add('hidden'); }
+        }
+
+        function renderDropdown(items, q) {
+            if (!items.length) {
+                resultsList.innerHTML = `<div class="px-4 py-6 text-center"><span class="material-symbols-outlined text-slate-700 text-3xl block mb-2">search_off</span><p class="text-xs text-slate-500">Sonuç bulunamadı</p></div>`;
+                allLink.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+                return;
+            }
+            resultsList.innerHTML = items.slice(0, 6).map(f => `
+                <a href="/film/${f.id}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group">
+                    <div class="w-10 h-14 rounded-lg overflow-hidden bg-slate-800 shrink-0">
+                        ${f.afis_yolu ? `<img src="${f.afis_yolu}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center"><span class="material-symbols-outlined text-slate-600 text-sm">movie</span></div>`}
+                    </div>
+                    <div class="overflow-hidden flex-1">
+                        <p class="text-sm font-bold text-slate-200 group-hover:text-primary transition-colors truncate">${f.film_adi}</p>
+                        <p class="text-[10px] text-slate-500 flex items-center gap-1">${f.puan ? `<span class="material-symbols-outlined text-primary text-[11px]" style="font-variation-settings:'FILL' 1;">star</span>${f.puan.toFixed(1)}` : ''}</p>
+                    </div>
+                </a>
+            `).join('');
+            allLink.href = `/search?q=${encodeURIComponent(q)}`;
+            allLink.classList.remove('hidden');
+            allLink.classList.add('flex');
+            dropdown.classList.remove('hidden');
+        }
+    })();
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
