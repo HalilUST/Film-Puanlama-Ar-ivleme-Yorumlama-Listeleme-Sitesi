@@ -1,5 +1,6 @@
 from src.app import db
 from src.app.models import User, Movie, Review, Log
+from src.app.models import User, Movie, Review
 
 # KULLANICI (USER) İŞLEMLERİ
 

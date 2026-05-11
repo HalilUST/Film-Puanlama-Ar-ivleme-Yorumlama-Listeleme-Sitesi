@@ -9,6 +9,12 @@ def create_app():
     
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///veritabani.db'
     
+    import os
+    database_url = os.environ.get('POSTGRES_URL') or os.environ.get('DATABASE_URL', 'sqlite:///veritabani.db')
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     db.init_app(app)
 
     from .views import views

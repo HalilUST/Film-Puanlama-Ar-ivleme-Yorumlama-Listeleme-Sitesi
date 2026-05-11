@@ -104,6 +104,7 @@
 <section class="relative h-[870px] w-full overflow-hidden">
 <div class="absolute inset-0 z-0">
 <img class="w-full h-full object-cover" data-alt="Dramatic black and white cinematic landscape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq7EXSDHW9rL-p0fAYoS3EYmal16RUn8GUo_diEW707PeDUgEIz0HZvYA4A7L1Jr_xABnUGeu5VnzbG6T6kPT83FkHm1J5NAa8HzI-kTySY-2mRx7MD-R5WTkYoZNkZtyAwkKsCUHwt-KRUB4dUqUH7o3WUW2aCi7LjOTdeAUPN8tFPtAUDhcb_EoezsMg9g0JysEv4MqmhLRik8u4U-KgIIODD_vrlHYkOTcuAIJ61-1DuXDxBZnV00ZLEdybGorXUEa9YZmStfno"/>
+<img class="w-full h-full object-cover" data-alt="Dramatic black and white cinematic landscape" src="{{ film.arka_plan | default('https://via.placeholder.com/1920x1080?text=Arkaplan+Yok') }}"/>
 <div class="absolute inset-0 hero-gradient"></div>
 </div>
 <!-- Content Overlay -->
@@ -112,6 +113,8 @@
 <!-- Poster -->
 <div class="hidden md:block w-72 shrink-0 shadow-2xl rounded-xl overflow-hidden transform translate-y-12">
 <img class="w-full aspect-[2/3] object-cover" data-alt="Minimalist noir film poster of a lone figure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHPXL9WS7tXUb3LpXG6CXl-N0XE8CHQ97v8rj_pVtEQc4rx9EK9eTXjWgdEAADz-bLdRHNqAfxtsNfljcv13OY2nwC0MVn7BVYKOPK_W0tQ94AyDAWpp067WxZna57V9xNMM1ZLmW17IGyU--NDucl1Hh5dhJeOpY6-ns9eNztsREXYATuvrv65D1_qi1-heS5r2x9dcjSDBpWLBmEmad-yG375KWYSg3jVhZCUTWV3KQBpzyB4faGZBhapVcx5X0fCJvc2oAeUKOL"/>
+<div class="hidden md:block w-72 shrink-0 shadow-2xl rounded-xl overflow-hidden transform translate-y-12 bg-surface-container-low">
+<img class="w-full aspect-[2/3] object-cover" data-alt="Film poster" src="{{ film.afis_yolu | default('https://via.placeholder.com/500x750?text=Afis+Yok') }}"/>
 </div>
 <!-- Details -->
 <div class="flex-1 space-y-6">
@@ -129,6 +132,30 @@
 <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="ml-2 text-2xl font-headline font-bold text-on-surface">8.4</span>
 <span class="ml-1 text-sm text-on-surface-variant">/ 10</span>
+{% for tur in film.turler %}
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-label uppercase tracking-widest text-on-surface-variant">{{ tur }}</span>
+{% endfor %}
+{% if film.sure %}
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-label uppercase tracking-widest text-on-surface-variant">{{ film.sure }} MIN</span>
+{% endif %}
+</div>
+<h1 class="text-5xl md:text-7xl font-headline font-bold tracking-tight text-on-surface leading-none mb-4">
+    {{ film.film_adi }}
+</h1>
+<div class="flex items-center gap-4 flex-wrap">
+<!-- TMDB Rating -->
+<div class="flex items-center bg-surface-container-lowest/40 backdrop-blur-md px-4 py-2 rounded-xl border border-outline-variant/20">
+<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-3">TMDB</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="ml-2 text-xl font-headline font-bold text-on-surface">{{ film.puan | round(1) }}</span>
+<span class="ml-1 text-xs text-on-surface-variant">/ 10</span>
+</div>
+<!-- Cinerate Rating -->
+<div class="flex items-center bg-surface-container-lowest/40 backdrop-blur-md px-4 py-2 rounded-xl border border-outline-variant/20">
+<span class="text-[10px] font-label text-primary uppercase tracking-widest mr-3">CINERATE</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="ml-2 text-xl font-headline font-bold text-on-surface">{{ cinerate_puan }}</span>
+<span class="ml-1 text-xs text-on-surface-variant">/ 10</span>
 </div>
 <button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
 <span class="material-symbols-outlined text-sm">bookmark_heart</span>
@@ -203,6 +230,43 @@
 <p class="font-body text-on-surface-variant leading-relaxed">
                                     "Atmospheric and slow-burning. It demands your full attention and rewards it with a sensory experience that stays with you long after the credits roll. Highly recommended for fans of classic noir."
                                 </p>
+    {{ film.ozet | default('Özet bulunmamaktadır.') }}
+</p>
+</div>
+<!-- Reviews -->
+<div class="space-y-8" id="reviews-section">
+<div class="flex justify-between items-end border-b border-outline-variant/10 pb-4">
+<h2 class="text-2xl font-headline font-bold">Audience Reflections</h2>
+<button id="write-review-btn" class="text-sm font-label text-tertiary hover:underline">Write a review</button>
+</div>
+
+<!-- Write a Review Form -->
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4 mb-8 hidden" id="review-form-container">
+    <div class="flex items-center gap-2 mb-2" id="review-rating-container">
+        <span class="text-sm text-on-surface-variant mr-2">Puanınız:</span>
+        <div class="flex" id="star-rating">
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="1"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="2"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="3"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="4"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="5"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="6"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="7"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="8"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="9"><span class="material-symbols-outlined">star</span></button>
+            <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="10"><span class="material-symbols-outlined">star</span></button>
+        </div>
+        <span class="ml-2 text-sm font-bold text-primary" id="selected-rating-text"></span>
+    </div>
+    <textarea id="review-text" class="w-full bg-surface text-on-surface border border-outline-variant/20 rounded-lg p-4 font-body outline-none focus:border-primary transition-colors min-h-[100px]" placeholder="Share your reflections..."></textarea>
+    <div class="flex justify-end gap-3">
+        <button id="cancel-review" class="px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors">Cancel</button>
+        <button id="submit-review" class="px-6 py-2 bg-primary text-on-primary rounded-md font-bold text-sm shadow-lg hover:scale-[1.02] active:scale-95 transition-all">Post Review</button>
+    </div>
+</div>
+
+<div id="reviews-container" class="space-y-8">
+    <div class="flex justify-center p-8"><span class="material-symbols-outlined animate-spin text-primary" style="animation: spin 1s linear infinite;">sync</span></div>
 </div>
 </div>
 </div>
@@ -281,4 +345,247 @@
 <span class="font-sans uppercase tracking-widest text-[10px] mt-1">Profile</span>
 </a>
 </nav>
+<script>
+const FILM_ID = {{ film_id }};
+const CURRENT_USER = "{{ current_user.username if current_user else '' }}";
+const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const reviewsContainer = document.getElementById('reviews-container');
+    const writeReviewBtn = document.getElementById('write-review-btn');
+    const reviewFormContainer = document.getElementById('review-form-container');
+    const cancelReviewBtn = document.getElementById('cancel-review');
+    const submitReviewBtn = document.getElementById('submit-review');
+    const reviewText = document.getElementById('review-text');
+    const starBtns = document.querySelectorAll('.star-btn');
+    const selectedRatingText = document.getElementById('selected-rating-text');
+
+    let isEditing = null;
+    let selectedRating = null;
+
+    starBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const value = parseInt(btn.getAttribute('data-value'));
+            selectedRating = value;
+            selectedRatingText.innerText = `${value}/10`;
+            
+            starBtns.forEach(b => {
+                const bVal = parseInt(b.getAttribute('data-value'));
+                if (bVal <= value) {
+                    b.classList.remove('text-on-surface-variant');
+                    b.classList.add('text-primary');
+                    b.querySelector('span').style.fontVariationSettings = "'FILL' 1";
+                } else {
+                    b.classList.add('text-on-surface-variant');
+                    b.classList.remove('text-primary');
+                    b.querySelector('span').style.fontVariationSettings = "'FILL' 0";
+                }
+            });
+        });
+    });
+
+    writeReviewBtn.addEventListener('click', () => {
+        if (!CURRENT_USER) {
+            alert('Lütfen yorum yapmak için giriş yapın.');
+            window.location.href = '/login';
+            return;
+        }
+        reviewFormContainer.classList.remove('hidden');
+        reviewText.focus();
+    });
+
+    function resetForm() {
+        reviewText.value = '';
+        isEditing = null;
+        selectedRating = null;
+        selectedRatingText.innerText = '';
+        starBtns.forEach(b => {
+            b.classList.add('text-on-surface-variant');
+            b.classList.remove('text-primary');
+            b.querySelector('span').style.fontVariationSettings = "'FILL' 0";
+        });
+    }
+
+    cancelReviewBtn.addEventListener('click', () => {
+        reviewFormContainer.classList.add('hidden');
+        resetForm();
+    });
+
+    submitReviewBtn.addEventListener('click', async () => {
+        const text = reviewText.value.trim();
+        if (!text) return alert('Yorum boş olamaz');
+
+        submitReviewBtn.disabled = true;
+        try {
+            if (isEditing) {
+                const response = await fetch(`/api/yorumlar/${isEditing}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ metin: text, rating: selectedRating })
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.hata || 'Yorum güncellenemedi');
+                }
+            } else {
+                const response = await fetch(`/api/filmler/${FILM_ID}/yorumlar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ metin: text, rating: selectedRating })
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.hata || 'Yorum eklenemedi');
+                }
+            }
+            reviewFormContainer.classList.add('hidden');
+            resetForm();
+            loadReviews();
+        } catch (e) {
+            alert(e.message || 'Bir hata oluştu');
+        } finally {
+            submitReviewBtn.disabled = false;
+        }
+    });
+
+    async function loadReviews() {
+        try {
+            const res = await fetch(`/api/filmler/${FILM_ID}/yorumlar`);
+            if (!res.ok) throw new Error('Yorumlar yüklenemedi');
+            const data = await res.json();
+            renderReviews(data.yorumlar);
+        } catch (e) {
+            reviewsContainer.innerHTML = '<p class="text-error text-center p-8">Yorumlar yüklenirken bir hata oluştu veya bağlantı koptu.</p>';
+        }
+    }
+
+    window.deleteComment = async (id) => {
+        if(!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
+        try {
+            await fetch(`/api/yorumlar/${id}`, { method: 'DELETE' });
+            loadReviews();
+        } catch (e) { alert('Hata oluştu'); }
+    };
+
+    window.editComment = (id, text) => {
+        isEditing = id;
+        reviewText.value = text;
+        reviewFormContainer.classList.remove('hidden');
+        reviewText.focus();
+        window.scrollTo({ top: reviewFormContainer.offsetTop - 100, behavior: 'smooth' });
+    };
+
+    window.voteComment = async (id, tip) => {
+        if (!CURRENT_USER) return alert('Oy vermek için giriş yapın.');
+        try {
+            const res = await fetch(`/api/yorumlar/${id}?action=vote`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tip })
+            });
+            const data = await res.json();
+            const scoreEl = document.getElementById(`score-${id}`);
+            if (scoreEl) scoreEl.innerText = (data.upvotes - data.downvotes);
+        } catch (e) { alert('Hata oluştu'); }
+    };
+
+    window.showReplyForm = (id) => {
+        if (!CURRENT_USER) return alert('Yanıt vermek için giriş yapın.');
+        document.getElementById(`reply-form-${id}`).classList.remove('hidden');
+    };
+
+    window.submitReply = async (id) => {
+        const inputEl = document.getElementById(`reply-input-${id}`);
+        const text = inputEl.value.trim();
+        if (!text) return alert('Yanıt boş olamaz.');
+        
+        try {
+            const response = await fetch(`/api/yorumlar/${id}?action=yanit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ metin: text })
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.hata || 'Yanıt eklenemedi');
+            }
+            inputEl.value = '';
+            loadReviews();
+        } catch(e) {
+            alert(e.message || 'Hata oluştu');
+        }
+    };
+
+    function renderReviews(reviews) {
+        if (reviews.length === 0) {
+            reviewsContainer.innerHTML = '<div class="text-center p-8 text-on-surface-variant italic">İlk yorumu siz yapın!</div>';
+            return;
+        }
+
+        reviewsContainer.innerHTML = reviews.map(r => {
+            const isMine = r.userId === CURRENT_USER;
+            const canEdit = isMine;
+            const canDelete = isMine || IS_ADMIN;
+            const score = (r.upvotes || 0) - (r.downvotes || 0);
+            const scoreColor = score > 0 ? 'text-green-500' : score < 0 ? 'text-red-500' : 'text-on-surface-variant';
+            
+            const repliesHtml = (r.yanitlar || []).map(rep => `
+                <div class="ml-12 mt-4 p-4 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold text-xs">
+                            ${rep.userId.charAt(0).toUpperCase()}
+                        </div>
+                        <p class="font-bold text-xs">${rep.userId}</p>
+                        <p class="text-[10px] text-on-surface-variant">${new Date(rep.tarih).toLocaleDateString()}</p>
+                    </div>
+                    <p class="text-sm text-on-surface-variant ml-9 whitespace-pre-wrap">${rep.metin}</p>
+                </div>
+            `).join('');
+
+            return `
+            <div class="bg-surface-container-low p-8 rounded-xl space-y-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center text-primary font-bold text-lg">
+                            ${r.userId.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm flex items-center gap-2">
+                                ${r.userId}
+                                ${isMine ? '<span class="px-2 py-0.5 rounded text-[10px] bg-primary/20 text-primary uppercase tracking-widest">Sen</span>' : ''}
+                            </p>
+                            <p class="text-[10px] text-on-surface-variant uppercase tracking-widest">${new Date(r.tarih).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 items-start">
+                        ${r.rating ? `<div class="flex items-center bg-surface-container px-2 py-1 rounded-md border border-primary/20 mr-2"><span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="ml-1 text-xs font-bold text-primary">${r.rating}/10</span></div>` : ''}
+                        ${canEdit ? `<button onclick="editComment(${r.id}, \`${r.metin.replace(/`/g, "'")}\`)" class="text-on-surface-variant hover:text-primary transition-colors" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></button>` : ''}
+                        ${canDelete ? `<button onclick="deleteComment(${r.id})" class="text-on-surface-variant hover:text-error transition-colors" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>` : ''}
+                    </div>
+                </div>
+                <p class="font-body text-on-surface-variant leading-relaxed whitespace-pre-wrap">${r.metin}</p>
+                <div class="flex items-center gap-4 pt-4 border-t border-outline-variant/10">
+                    <div class="flex items-center gap-2 bg-surface-container p-1 rounded-full border border-outline-variant/20">
+                        <button onclick="voteComment(${r.id}, 1)" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-green-500/20 hover:text-green-500 transition-colors"><span class="material-symbols-outlined text-sm">thumb_up</span></button>
+                        <span id="score-${r.id}" class="text-xs font-bold ${scoreColor} min-w-[20px] text-center">${score}</span>
+                        <button onclick="voteComment(${r.id}, -1)" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-red-500/20 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-sm">thumb_down</span></button>
+                    </div>
+                    <button onclick="showReplyForm(${r.id})" class="text-xs font-label text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">reply</span> Yanıtla
+                    </button>
+                </div>
+                <div id="reply-form-${r.id}" class="hidden ml-12 mt-4 flex gap-2">
+                    <input type="text" id="reply-input-${r.id}" class="flex-1 bg-surface text-on-surface border border-outline-variant/20 rounded px-3 py-1 text-sm outline-none focus:border-primary" placeholder="Yanıtınızı yazın...">
+                    <button onclick="submitReply(${r.id})" class="px-3 py-1 bg-primary text-on-primary rounded text-xs font-bold hover:scale-[1.02] transition-all">Gönder</button>
+                </div>
+                ${repliesHtml}
+            </div>
+            `;
+        }).join('');
+    }
+
+    loadReviews();
+});
+</script>
 </body></html>
