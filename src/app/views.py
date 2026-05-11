@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 
 from src.app.crud import (kullanici_getir_username, kullanici_getir_email, kullanici_olustur, 
                         tum_kullanicilari_getir, kullanici_sil, log_ekle, tum_loglari_getir)
-from src.api.tmdb_client import populer_filmleri_cek, film_detay_cek
+from src.api.tmdb_client import populer_filmleri_cek, film_detay_cek, film_ara, ture_gore_filmleri_getir
 from src.app.models import db, Review, Vote, Reply, User, Movie
 
 views = Blueprint('views', __name__)
@@ -40,9 +40,7 @@ def dogrulama_maili_gonder(alici_mail, kod):
 
 @views.route('/')
 def home():
-    if 'kullanici' in session:
-        return redirect(url_for('views.dashboard'))
-    return redirect(url_for('views.login'))
+    return redirect(url_for('views.dashboard'))
 
 @views.route('/login', methods=['GET', 'POST'])
 def login():
@@ -67,21 +65,33 @@ def login():
 
 @views.route('/dashboard')
 def dashboard():
-    if 'kullanici' in session:
-        try:
-            populer_filmler = populer_filmleri_cek(1) 
-            user = kullanici_getir_email(session.get('email'))
-            aktif_isim = user.username if user else session['kullanici']
-            admin_yetkisi = user.is_admin if user else False
-            
-            return render_template("Dashboard.html", 
-                                 aktif_isim=aktif_isim, 
-                                 filmler=populer_filmler, 
-                                 is_admin=admin_yetkisi)
-        except Exception as e:
-            return f"<h1>Sistemsel bir hata olustu: {e}</h1>"
-    else:
-        return redirect(url_for('views.login'))
+    user = kullanici_getir_email(session.get('email')) if 'email' in session else None
+    aktif_isim = user.username if user else "Misafir"
+    admin_yetkisi = user.is_admin if user else False
+    is_logged_in = 'kullanici' in session
+    
+    try:
+        populer_filmler = populer_filmleri_cek(2) # 40 film
+        
+        # Kategoriler (Action=28, Comedy=35, Horror=27, Sci-Fi=878, Romance=10749, Animation=16)
+        kategoriler = [
+            {"isim": "Aksiyon", "icon": "local_fire_department", "filmler": ture_gore_filmleri_getir(28)},
+            {"isim": "Komedi", "icon": "sentiment_very_satisfied", "filmler": ture_gore_filmleri_getir(35)},
+            {"isim": "Korku", "icon": "skull", "filmler": ture_gore_filmleri_getir(27)},
+            {"isim": "Bilim Kurgu", "icon": "rocket_launch", "filmler": ture_gore_filmleri_getir(878)},
+            {"isim": "Romantik", "icon": "favorite", "filmler": ture_gore_filmleri_getir(10749)},
+            {"isim": "Animasyon", "icon": "animation", "filmler": ture_gore_filmleri_getir(16)},
+        ]
+        
+        return render_template("Dashboard.html", 
+                             aktif_isim=aktif_isim, 
+                             filmler=populer_filmler, 
+                             kategoriler=kategoriler,
+                             is_admin=admin_yetkisi,
+                             current_user=user,
+                             is_logged_in=is_logged_in)
+    except Exception as e:
+        return f"<h1>Sistemsel bir hata olustu: {e}</h1>"
 
 @views.route('/logout')
 def logout():
