@@ -196,7 +196,7 @@ def api_yorumlar(film_id):
         reviews = Review.query.filter_by(movie_id=film_id).order_by(Review.date_posted.desc()).all()
         yorumlar_data = []
         for r in reviews:
-            replies = [{"id": rep.id, "userId": rep.user.username, "metin": rep.comment, "tarih": rep.date_posted} for rep in r.replies]
+            replies = [{"id": rep.id, "userId": rep.user.username, "metin": rep.comment, "tarih": str(rep.date_posted)} for rep in r.replies]
             upvotes = Vote.query.filter_by(review_id=r.id, tip=1).count()
             downvotes = Vote.query.filter_by(review_id=r.id, tip=-1).count()
             yorumlar_data.append({
@@ -204,7 +204,7 @@ def api_yorumlar(film_id):
                 "filmId": r.movie_id,
                 "userId": r.author.username,
                 "metin": r.comment,
-                "tarih": r.date_posted,
+                "tarih": str(r.date_posted),
                 "begeniler": r.likes,
                 "yanitlar": replies,
                 "upvotes": upvotes,
@@ -231,18 +231,18 @@ def api_yorumlar(film_id):
         if not movie:
             film_data = film_detay_cek(film_id)
             if film_data:
-                try:
-                    yil = int(str(film_data.get('tarih', '2000'))[:4])
-                except ValueError:
-                    yil = 2000
+                yil = 2000
+                turler = film_data.get('turler', [])
+                if isinstance(turler, list):
+                    turler = ', '.join(turler) if turler else 'Bilinmeyen'
                 movie = Movie(
                     id=film_id,
                     tmdb_id=film_id,
-                    title=film_data.get('baslik', 'Bilinmeyen'),
+                    title=film_data.get('film_adi', 'Bilinmeyen'),
                     year=yil,
-                    genre=film_data.get('turler', 'Bilinmeyen'),
+                    genre=turler,
                     description=film_data.get('ozet', ''),
-                    poster_url=film_data.get('poster')
+                    poster_url=film_data.get('afis_yolu')
                 )
                 db.session.add(movie)
                 db.session.commit()
@@ -256,7 +256,7 @@ def api_yorumlar(film_id):
             "filmId": film_id,
             "userId": user.username,
             "metin": metin,
-            "tarih": yeni_yorum.date_posted,
+            "tarih": str(yeni_yorum.date_posted),
             "begeniler": 0,
             "yanitlar": [],
             "upvotes": 0,
@@ -275,7 +275,9 @@ def api_yorum_islem(yorum_id):
         return jsonify({"hata": "Oturumunuz geçersiz, lütfen tekrar giriş yapın."}), 401
         
     action = request.args.get('action')
-    yorum = Review.query.get_or_404(yorum_id)
+    yorum = Review.query.get(yorum_id)
+    if not yorum:
+        return jsonify({"hata": "Yorum bulunamadı"}), 404
     
     if request.method == 'DELETE':
         if yorum.user_id != user.id and not user.is_admin:
