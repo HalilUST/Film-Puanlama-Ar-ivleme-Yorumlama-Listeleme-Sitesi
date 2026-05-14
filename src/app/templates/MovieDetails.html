@@ -77,6 +77,10 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .glass-nav { background: rgba(17, 19, 22, 0.6); backdrop-filter: blur(20px); }
         .hero-gradient { background: linear-gradient(to bottom, rgba(17,19,22,0.2) 0%, rgba(17,19,22,1) 100%); }
+        .spoiler-text { position: relative; cursor: pointer; }
+        .spoiler-text .spoiler-content { filter: blur(8px); user-select: none; transition: filter 0.3s ease; }
+        .spoiler-text .spoiler-warning { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.05em; pointer-events: none; white-space: nowrap; }
+        .spoiler-text:not(.spoiler-text) .spoiler-warning { display: none; }
     </style>
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary selection:text-on-primary">
@@ -145,9 +149,13 @@
                 <span class="ml-2 text-xl font-headline font-bold text-on-surface">{{ cinerate_puan }}</span>
                 <span class="ml-1 text-xs text-on-surface-variant">/ 10</span>
             </div>
-            <button id="watchlist-btn" onclick="toggleWatchlist({{ film.id }})" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
-                <span class="material-symbols-outlined text-sm">bookmark_heart</span>
-                Watchlist'e Ekle
+            <button id="watchlist-btn" onclick="toggleWatchlist({{ film.id }})" class="{% if is_in_watchlist %}bg-green-600/80 border border-green-500/30{% else %}bg-gradient-to-br from-primary to-primary-container{% endif %} text-on-primary px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm" {% if is_in_watchlist %}style="font-variation-settings: 'FILL' 1;"{% endif %}>{% if is_in_watchlist %}check_circle{% else %}bookmark_heart{% endif %}</span>
+                <span id="watchlist-btn-text">{% if is_in_watchlist %}Watchlist'te ✓{% else %}Watchlist'e Ekle{% endif %}</span>
+            </button>
+            <button id="watched-btn" onclick="toggleWatched({{ film.id }})" class="{% if is_watched %}bg-blue-600/80 border border-blue-500/30{% else %}bg-surface-container-high border border-white/10{% endif %} text-on-surface px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm" id="watched-icon" {% if is_watched %}style="font-variation-settings: 'FILL' 1;"{% endif %}>{% if is_watched %}visibility{% else %}visibility{% endif %}</span>
+                <span id="watched-btn-text">{% if is_watched %}İzlendi ✓{% else %}Filmi İzledim{% endif %}</span>
             </button>
         </div>
     </div>
@@ -159,7 +167,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-24">
 <div class="lg:col-span-8 space-y-12">
 <div class="space-y-4">
-<h2 class="text-sm font-label uppercase tracking-[0.2rem] text-primary">Özet</h2>
+<h2 class="text-sm font-label uppercase tracking-[0.2rem] text-primary" data-translate="movie_summary">Özet</h2>
 <p class="text-xl font-body leading-relaxed text-on-surface/80 max-w-3xl">
     {{ film.ozet | default('Özet bulunmamaktadır.') }}
 </p>
@@ -167,13 +175,13 @@
 <!-- Reviews -->
 <div class="space-y-8" id="reviews-section">
 <div class="flex justify-between items-end border-b border-outline-variant/10 pb-4">
-<h2 class="text-2xl font-headline font-bold">Audience Reflections</h2>
+<h2 class="text-2xl font-headline font-bold" data-translate="movie_reviews">Audience Reflections</h2>
 </div>
 
 <!-- Write a Review Form -->
 <div class="bg-surface-container-high/50 backdrop-blur-md border border-white/5 p-6 rounded-2xl space-y-4 mb-8" id="review-form-container">
     <div class="flex items-center gap-2 mb-2" id="review-rating-container">
-        <span class="text-sm text-on-surface-variant mr-2">Puanınız:</span>
+        <span class="text-sm text-on-surface-variant mr-2" data-translate="movie_your_rating">Puanınız:</span>
         <div class="flex" id="star-rating">
             <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="1"><span class="material-symbols-outlined">star</span></button>
             <button class="star-btn hover:text-primary transition-colors text-on-surface-variant" data-value="2"><span class="material-symbols-outlined">star</span></button>
@@ -188,10 +196,17 @@
         </div>
         <span class="ml-2 text-sm font-bold text-primary" id="selected-rating-text"></span>
     </div>
-    <textarea id="review-text" class="w-full bg-surface text-on-surface border border-outline-variant/20 rounded-lg p-4 font-body outline-none focus:border-primary transition-colors min-h-[100px]" placeholder="Share your reflections..."></textarea>
-    <div class="flex justify-end gap-3">
-        <button id="cancel-review" class="px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors">Cancel</button>
-        <button id="submit-review" class="px-6 py-2 bg-primary text-on-primary rounded-md font-bold text-sm shadow-lg hover:scale-[1.02] active:scale-95 transition-all">Post Review</button>
+    <textarea id="review-text" class="w-full bg-surface text-on-surface border border-outline-variant/20 rounded-lg p-4 font-body outline-none focus:border-primary transition-colors min-h-[100px]" placeholder="Share your reflections..." data-translate-placeholder="movie_share_thoughts"></textarea>
+    <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 cursor-pointer select-none group">
+            <input type="checkbox" id="spoiler-check" class="w-4 h-4 rounded border-white/20 bg-surface text-red-500 focus:ring-red-500/30 cursor-pointer">
+            <span class="material-symbols-outlined text-sm text-red-400 group-hover:text-red-300 transition-colors">warning</span>
+            <span class="text-xs text-red-400 font-bold uppercase tracking-wider group-hover:text-red-300 transition-colors" data-translate="movie_spoiler">Spoiler İçeriyor</span>
+        </label>
+        <div class="flex gap-3">
+            <button id="cancel-review" class="px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors" data-translate="movie_cancel">Cancel</button>
+            <button id="submit-review" class="px-6 py-2 bg-primary text-on-primary rounded-md font-bold text-sm shadow-lg hover:scale-[1.02] active:scale-95 transition-all" data-translate="movie_post_review">Post Review</button>
+        </div>
     </div>
 </div>
 
@@ -251,19 +266,88 @@
     const FILM_ID = {{ film.id }};
     const CURRENT_USER = "{{ current_user.username if current_user else '' }}";
     const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+    const LANG = localStorage.getItem('cinerate_lang') || 'en';
+    const T = {
+        tr: {
+            wl_add: "Watchlist'e Ekle", wl_added: "Watchlist'te ✓",
+            w_mark: "Filmi İzledim", w_done: "İzlendi ✓",
+            login_wl: "Watchliste eklemek için giriş yapın.",
+            login_w: "Bu özellik için giriş yapın.",
+            error: "Bir hata oluştu", conn_error: "Bağlantı hatası",
+            spoiler_warn: "Spoiler - Görmek için tıkla",
+            first_review: "İlk yorumu siz yapın!",
+            reply_text: "YANITLA", you_tag: "Sen"
+        },
+        en: {
+            wl_add: "Add to Watchlist", wl_added: "In Watchlist ✓",
+            w_mark: "Mark as Watched", w_done: "Watched ✓",
+            login_wl: "Sign in to add to watchlist.",
+            login_w: "Sign in to use this feature.",
+            error: "An error occurred", conn_error: "Connection error",
+            spoiler_warn: "Spoiler - Click to reveal",
+            first_review: "Be the first to review!",
+            reply_text: "REPLY", you_tag: "You"
+        }
+    };
+    const t = T[LANG] || T.en;
 
     window.toggleWatchlist = async (id) => {
-        if (!CURRENT_USER) return alert('Watchliste eklemek için giriş yapın.');
+        if (!CURRENT_USER) return alert(t.login_wl);
+        const btn = document.getElementById('watchlist-btn');
+        const btnText = document.getElementById('watchlist-btn-text');
+        const icon = btn.querySelector('.material-symbols-outlined');
+        btn.disabled = true;
         try {
             const res = await fetch(`/api/watchlist/${id}`, { method: 'POST' });
             const data = await res.json();
             if (res.ok) {
-                alert(data.mesaj);
+                if (data.eklendi) {
+                    btn.className = 'bg-green-600/80 border border-green-500/30 text-on-primary px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all';
+                    icon.textContent = 'check_circle';
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                    btnText.textContent = t.wl_added;
+                } else {
+                    btn.className = 'bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all';
+                    icon.textContent = 'bookmark_heart';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                    btnText.textContent = t.wl_add;
+                }
             } else {
-                alert(data.hata || 'Bir hata oluştu');
+                alert(data.hata || t.error);
             }
         } catch (e) {
-            alert('Bağlantı hatası');
+            alert(t.conn_error);
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    window.toggleWatched = async (id) => {
+        if (!CURRENT_USER) return alert(t.login_w);
+        const btn = document.getElementById('watched-btn');
+        const btnText = document.getElementById('watched-btn-text');
+        const icon = document.getElementById('watched-icon');
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/api/watched/${id}`, { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.izlendi) {
+                    btn.className = 'bg-blue-600/80 border border-blue-500/30 text-on-surface px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all';
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                    btnText.textContent = t.w_done;
+                } else {
+                    btn.className = 'bg-surface-container-high border border-white/10 text-on-surface px-8 py-3 rounded-md font-bold text-sm tracking-wide shadow-lg flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                    btnText.textContent = t.w_mark;
+                }
+            } else {
+                alert(data.hata || t.error);
+            }
+        } catch (e) {
+            alert(t.conn_error);
+        } finally {
+            btn.disabled = false;
         }
     };
 
@@ -319,6 +403,8 @@
             isEditing = null;
             selectedRating = null;
             if(selectedRatingText) selectedRatingText.innerText = '';
+            const spoilerCheck = document.getElementById('spoiler-check');
+            if(spoilerCheck) spoilerCheck.checked = false;
             starBtns.forEach(b => {
                 b.classList.add('text-on-surface-variant');
                 b.classList.remove('text-primary');
@@ -354,16 +440,19 @@
                         const response = await fetch(`/api/filmler/${FILM_ID}/yorumlar`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ metin: text, rating: selectedRating })
+                            body: JSON.stringify({ metin: text, rating: selectedRating, is_spoiler: document.getElementById('spoiler-check').checked })
                         });
                         if (!response.ok) {
                             const data = await response.json();
                             throw new Error(data.hata || 'Yorum eklenemedi');
                         }
                     }
-                    reviewFormContainer.classList.add('hidden');
                     resetForm();
-                    loadReviews();
+                    await loadReviews();
+                    // Scroll to the reviews container so the new review is visible
+                    setTimeout(() => {
+                        reviewsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 } catch (e) {
                     alert(e.message || 'Bir hata oluştu');
                 } finally {
@@ -457,7 +546,7 @@
         function renderReviews(reviews) {
             if (!reviewsContainer) return;
             if (reviews.length === 0) {
-                reviewsContainer.innerHTML = '<div class="text-center p-8 text-on-surface-variant italic">İlk yorumu siz yapın!</div>';
+                reviewsContainer.innerHTML = `<div class="text-center p-8 text-on-surface-variant italic">${t.first_review}</div>`;
                 return;
             }
 
@@ -504,7 +593,7 @@
                             <div>
                                 <p class="font-bold text-base text-white flex items-center gap-2">
                                     ${r.userId}
-                                    ${isMine ? '<span class="px-2 py-0.5 rounded-full text-[9px] bg-primary/20 text-primary uppercase tracking-widest border border-primary/20">Sen</span>' : ''}
+                                    ${isMine ? `<span class="px-2 py-0.5 rounded-full text-[9px] bg-primary/20 text-primary uppercase tracking-widest border border-primary/20">${t.you_tag}</span>` : ''}
                                 </p>
                                 <p class="text-[10px] text-slate-500 uppercase tracking-widest">${new Date(r.tarih).toLocaleDateString()}</p>
                             </div>
@@ -516,7 +605,10 @@
                         </div>
                     </div>
                     
-                    <p class="font-body text-slate-300 leading-relaxed whitespace-pre-wrap text-base py-2 pl-16 pr-4">${r.metin}</p>
+                    <p class="font-body text-slate-300 leading-relaxed whitespace-pre-wrap text-base py-2 pl-16 pr-4 ${r.is_spoiler ? 'spoiler-text' : ''}" ${r.is_spoiler ? 'onclick="this.classList.remove(\'spoiler-text\'); this.querySelector(\'.spoiler-warning\').style.display=\'none\'"' : ''}>
+                        ${r.is_spoiler ? `<span class="spoiler-warning"><span class="material-symbols-outlined text-[14px] align-middle">warning</span> ${t.spoiler_warn}</span>` : ''}
+                        <span class="${r.is_spoiler ? 'spoiler-content' : ''}">${r.metin}</span>
+                    </p>
                     
                     <div class="flex items-center justify-between pt-4 border-t border-white/5 pl-16">
                         <div class="flex items-center gap-4">
@@ -526,7 +618,7 @@
                                 <button onclick="voteComment(${r.id}, -1)" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-red-500/20 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-sm">thumb_down</span></button>
                             </div>
                             <button onclick="showReplyForm(${r.id})" class="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-primary/10">
-                                <span class="material-symbols-outlined text-sm">reply</span> Yanıtla
+                                <span class="material-symbols-outlined text-sm">reply</span> ${t.reply_text}
                             </button>
                         </div>
                         
@@ -543,8 +635,8 @@
                     <div id="reply-form-${r.id}" class="hidden ml-16 mt-4 flex gap-3 relative">
                         <div class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-px bg-white/10"></div>
                         <div class="absolute left-4 -top-4 w-px h-10 bg-white/10"></div>
-                        <input type="text" id="reply-input-${r.id}" class="flex-1 bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder-slate-600" placeholder="Bir yanıt yazın...">
-                        <button onclick="submitReply(${r.id})" class="px-6 py-2 cinematic-gradient text-slate-900 rounded-xl text-xs font-bold tracking-wider uppercase hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">Gönder</button>
+                        <input type="text" id="reply-input-${r.id}" class="flex-1 bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder-slate-600" placeholder="${LANG === 'tr' ? 'Bir yanıt yazın...' : 'Write a reply...'}">
+                        <button onclick="submitReply(${r.id})" class="px-6 py-2 bg-primary hover:bg-primary/80 text-slate-900 rounded-xl text-xs font-bold tracking-wider uppercase hover:scale-[1.02] active:scale-95 transition-all shadow-lg">${LANG === 'tr' ? 'Gönder' : 'Send'}</button>
                     </div>
                     <div class="ml-6 border-l-2 border-white/5 pl-4 mt-4 space-y-3">
                         ${repliesHtml}
@@ -556,5 +648,23 @@
 
         loadReviews();
     });
+</script>
+<script>
+(async function() {
+    const lang = localStorage.getItem('cinerate_lang') || 'en';
+    try {
+        const res = await fetch('/api/translations');
+        const t = await res.json();
+        if (!t[lang]) return;
+        document.querySelectorAll('[data-translate]').forEach(el => {
+            const k = el.getAttribute('data-translate');
+            if (t[lang][k]) el.innerText = t[lang][k];
+        });
+        document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+            const k = el.getAttribute('data-translate-placeholder');
+            if (t[lang][k]) el.placeholder = t[lang][k];
+        });
+    } catch(e) {}
+})();
 </script>
 </body></html>

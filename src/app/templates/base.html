@@ -124,16 +124,53 @@
             <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="nav_curators">Curators</span>
         </a>
 
-        <!-- Categories block added here -->
+        <a class="flex items-center px-6 py-4 {% if request.path == '/top250' %}bg-gradient-to-r from-primary/20 to-transparent text-primary border-l-4 border-primary{% else %}text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f]{% endif %} transition-all group/item" href="/top250">
+            <span class="material-symbols-outlined mr-4 group-hover/item:scale-110 transition-transform">emoji_events</span>
+            <span class="text-sm font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="nav_top250">Top 250</span>
+        </a>
+
+        <!-- Categories block -->
         <div class="h-px bg-outline-variant/10 mx-6 my-4"></div>
         <p class="px-6 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2" data-translate="categories">Categories</p>
         <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/28">
             <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">local_fire_department</span>
-            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Aksiyon</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_action">Aksiyon</span>
         </a>
         <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/35">
             <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">sentiment_very_satisfied</span>
-            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap">Komedi</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_comedy">Komedi</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/27">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">skull</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_horror">Korku</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/878">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">rocket_launch</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_scifi">Bilim Kurgu</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/10749">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">favorite</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_romance">Romantik</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/16">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">animation</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_animation">Animasyon</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/53">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">visibility</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_thriller">Gerilim</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/18">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">theater_comedy</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_drama">Dram</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/10752">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">swords</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_war">Savaş</span>
+        </a>
+        <a class="flex items-center px-6 py-2 text-slate-500 hover:text-slate-100 hover:bg-[#1a1c1f] transition-all group/item" href="/category/10402">
+            <span class="material-symbols-outlined mr-4 text-[18px] group-hover/item:scale-110 transition-transform">music_note</span>
+            <span class="text-xs font-label uppercase tracking-[0.1rem] font-bold whitespace-nowrap" data-translate="cat_music">Müzik</span>
         </a>
 
         <div class="h-px bg-outline-variant/10 mx-6 my-4"></div>
@@ -287,6 +324,16 @@
                 if (q.length < 2) { dropdown.classList.add('hidden'); return; }
                 clearTimeout(timer);
                 timer = setTimeout(() => fetchResults(q), 350);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const q = input.value.trim();
+                    if (q.length >= 2) {
+                        window.location.href = '/search?q=' + encodeURIComponent(q);
+                    }
+                }
             });
 
             clearBtn.addEventListener('click', () => {

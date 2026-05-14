@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 
 from src.app.crud import (kullanici_getir_username, kullanici_getir_email, kullanici_olustur, 
                         tum_kullanicilari_getir, kullanici_sil, log_ekle, tum_loglari_getir)
-from src.api.tmdb_client import populer_filmleri_cek, film_detay_cek, film_ara, ture_gore_filmleri_getir
+from src.api.tmdb_client import populer_filmleri_cek, film_detay_cek, film_ara, ture_gore_filmleri_getir, en_iyi_filmleri_cek
 from src.app.models import db, Review, Vote, Reply, User, Movie, Log, ReplyVote
 
 views = Blueprint('views', __name__)
@@ -102,7 +102,12 @@ def category_page(genre_id):
         27: "Korku",
         878: "Bilim Kurgu",
         10749: "Romantik",
-        16: "Animasyon"
+        16: "Animasyon",
+        99: "Belgesel",
+        53: "Gerilim",
+        18: "Dram",
+        10752: "Savaş",
+        10402: "Müzik"
     }
     tur_adi = kategori_isimleri.get(genre_id, "Kategori")
     
@@ -137,6 +142,29 @@ def api_search():
         return jsonify({"results": results})
     except Exception as e:
         return jsonify({"results": [], "hata": str(e)})
+
+@views.route('/search')
+def search_page():
+    q = request.args.get('q', '').strip()
+    results = []
+    if q:
+        try:
+            results = film_ara(q)
+        except Exception:
+            results = []
+    user = kullanici_getir_email(session.get('email')) if 'email' in session else None
+    return render_template('Search.html', query=q, results=results, current_user=user)
+
+@views.route('/top250')
+def top250():
+    user = kullanici_getir_email(session.get('email')) if 'email' in session else None
+    try:
+        filmler = en_iyi_filmleri_cek(13)
+        filmler = filmler[:250]
+        return render_template('Top250.html', filmler=filmler, current_user=user)
+    except Exception as e:
+        return f"<h1>Hata: {e}</h1>"
+
 
 @views.route('/logout')
 def logout():
@@ -209,7 +237,18 @@ def journal():
 
 @views.route('/archive')
 def archive():
-    return render_template('Archive.html')
+    user = kullanici_getir_email(session.get('email')) if 'email' in session else None
+    watched_movies = []
+    if user:
+        for movie in user.watched_movies:
+            film_data = film_detay_cek(movie.tmdb_id)
+            watched_movies.append({
+                'id': movie.tmdb_id,
+                'title': movie.title,
+                'poster_path': movie.poster_url or (film_data.get('afis_yolu') if film_data else None),
+                'vote_average': film_data.get('puan', 0) if film_data else 0
+            })
+    return render_template('Archive.html', watched_movies=watched_movies, current_user=user)
 
 @views.route('/settings')
 def settings():
@@ -225,11 +264,13 @@ def admin_panel():
     if user and user.is_admin:
         try:
             kullanicilar = tum_kullanicilari_getir()
-            loglar = tum_loglari_getir() 
+            loglar = tum_loglari_getir()
+            tum_yorumlar = Review.query.order_by(Review.date_posted.desc()).all()
         except:
-            kullanicilar = [] 
-            loglar = [] 
-        return render_template("Adminscreen.html", users=kullanicilar, logs=loglar)
+            kullanicilar = []
+            loglar = []
+            tum_yorumlar = []
+        return render_template("Adminscreen.html", users=kullanicilar, logs=loglar, tum_yorumlar=tum_yorumlar, admin_user=user)
     else:
         return "<h1>Dur orda! Yetkiniz yok.</h1>", 403
 
@@ -254,12 +295,22 @@ def film_detay(id):
     cinerate_avg = db.session.query(func.avg(Review.rating)).filter(Review.movie_id == id, Review.rating.isnot(None)).scalar()
     cinerate_puan = round(cinerate_avg, 1) if cinerate_avg is not None else 0.0
         
+    is_in_watchlist = False
+    is_watched = False
+    if user_obj:
+        movie_obj = Movie.query.get(id)
+        if movie_obj:
+            is_in_watchlist = movie_obj in user_obj.saved_movies
+            is_watched = movie_obj in user_obj.watched_movies
+
     return render_template("MovieDetails.html", 
                            film_id=id, 
                            film=film_data,
                            cinerate_puan=cinerate_puan,
                            current_user=user_obj, 
-                           is_admin=is_admin)
+                           is_admin=is_admin,
+                           is_in_watchlist=is_in_watchlist,
+                           is_watched=is_watched)
 
 @views.route('/api/filmler/<int:film_id>/yorumlar', methods=['GET', 'POST'])
 def api_yorumlar(film_id):
@@ -292,7 +343,8 @@ def api_yorumlar(film_id):
                 "yanitlar": replies_data,
                 "upvotes": upvotes,
                 "downvotes": downvotes,
-                "rating": r.rating
+                "rating": r.rating,
+                "is_spoiler": r.is_spoiler
             })
         return jsonify({"yorumlar": yorumlar_data})
         
@@ -329,7 +381,9 @@ def api_yorumlar(film_id):
                 db.session.add(movie)
                 db.session.commit()
 
-        yeni_yorum = Review(rating=puan, comment=metin, user_id=user.id, movie_id=film_id)
+        is_spoiler = data.get("is_spoiler", False)
+
+        yeni_yorum = Review(rating=puan, comment=metin, user_id=user.id, movie_id=film_id, is_spoiler=is_spoiler)
         db.session.add(yeni_yorum)
         db.session.commit()
         
@@ -343,7 +397,8 @@ def api_yorumlar(film_id):
             "yanitlar": [],
             "upvotes": 0,
             "downvotes": 0,
-            "rating": puan
+            "rating": puan,
+            "is_spoiler": is_spoiler
         }), 201
 
 @views.route('/api/yorumlar/<int:yorum_id>', methods=['POST', 'PUT', 'DELETE'])
@@ -458,3 +513,61 @@ def api_watchlist_toggle(film_id):
         
     db.session.commit()
     return jsonify({"mesaj": mesaj, "eklendi": eklendi})
+
+@views.route('/api/watched/<int:film_id>', methods=['POST'])
+def api_watched_toggle(film_id):
+    if 'email' not in session:
+        return jsonify({"hata": "Giriş yapmalısınız"}), 401
+    user = kullanici_getir_email(session.get('email'))
+    if not user:
+        return jsonify({"hata": "Geçersiz oturum"}), 401
+        
+    movie = Movie.query.get(film_id)
+    if not movie:
+        film_data = film_detay_cek(film_id)
+        if film_data:
+            yil = 2000
+            turler = film_data.get('turler', [])
+            genre_str = ', '.join(turler) if isinstance(turler, list) else str(turler)
+            movie = Movie(
+                id=film_id,
+                tmdb_id=film_id,
+                title=film_data.get('film_adi', 'Bilinmeyen'),
+                year=yil,
+                genre=genre_str,
+                description=film_data.get('ozet', ''),
+                poster_url=film_data.get('afis_yolu')
+            )
+            db.session.add(movie)
+            db.session.commit()
+        else:
+            return jsonify({"hata": "Film bulunamadı"}), 404
+            
+    if movie in user.watched_movies:
+        user.watched_movies.remove(movie)
+        mesaj = "Film izlenenlerden çıkarıldı"
+        izlendi = False
+    else:
+        user.watched_movies.append(movie)
+        mesaj = "Film izlendi olarak işaretlendi"
+        izlendi = True
+        
+    db.session.commit()
+    return jsonify({"mesaj": mesaj, "izlendi": izlendi})
+
+@views.route('/api/admin/yorumlar/<int:yorum_id>', methods=['DELETE'])
+def api_admin_yorum_sil(yorum_id):
+    if 'email' not in session:
+        return jsonify({"hata": "Giriş yapmalısınız"}), 401
+    user = kullanici_getir_email(session.get('email'))
+    if not user or not user.is_admin:
+        return jsonify({"hata": "Yetkiniz yok"}), 403
+    
+    yorum = Review.query.get(yorum_id)
+    if not yorum:
+        return jsonify({"hata": "Yorum bulunamadı"}), 404
+    
+    db.session.delete(yorum)
+    db.session.commit()
+    log_ekle(user.username, f"Yorum #{yorum_id} admin tarafından silindi")
+    return jsonify({"mesaj": "Yorum silindi"})

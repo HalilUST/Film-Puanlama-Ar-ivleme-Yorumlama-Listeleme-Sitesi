@@ -13,6 +13,7 @@ TRANSLATIONS = {
         "nav_welcome": "Hoşgeldiniz!",
         "nav_welcome_sub": "Giriş yaparak tüm özelliklere erişin.",
         "nav_login_reg": "Giriş Yap / Kayıt Ol",
+        "nav_top250": "Top 250",
         
         "modal_title": "Üyelik Gerekli",
         "modal_desc": "Bu özelliği kullanabilmek için giriş yapmanız veya ücretsiz bir hesap oluşturmanız gerekiyor.",
@@ -26,6 +27,18 @@ TRANSLATIONS = {
         "dash_add_list": "Listeye Ekle",
         "dash_categories": "Kategoriler",
         "view_all": "Tümünü Gör",
+        
+        "categories": "Kategoriler",
+        "cat_action": "Aksiyon",
+        "cat_comedy": "Komedi",
+        "cat_horror": "Korku",
+        "cat_scifi": "Bilim Kurgu",
+        "cat_romance": "Romantik",
+        "cat_animation": "Animasyon",
+        "cat_thriller": "Gerilim",
+        "cat_drama": "Dram",
+        "cat_war": "Savaş",
+        "cat_music": "Müzik",
         
         "curators_title": "En İyi Küratörler",
         "curators_desc": "CineRate topluluğunun en seçkin eleştirmenleri.",
@@ -43,7 +56,55 @@ TRANSLATIONS = {
         "archive_subtitle": "Tamamlanmış sinematik yolculuğunuz.",
         "archive_empty_title": "Arşiv henüz boş",
         "archive_empty_desc": "İzlediğiniz filmler burada tarihçeniz olarak görünecek.",
-        "btn_explore": "Filmleri Keşfet"
+        "archive_total": "Toplam",
+        "btn_explore": "Filmleri Keşfet",
+        
+        "top250_title": "En İyi 250 Film",
+        "top250_desc": "TMDB puanına göre en yüksek puanlı 250 film.",
+        "top250_all": "Tümü",
+        "top250_showing": "film gösteriliyor",
+        "top250_no_results": "Bu kategoride film bulunamadı",
+        "top250_try_other": "Farklı bir kategori deneyin.",
+        
+        "movie_summary": "Özet",
+        "movie_reviews": "İzleyici Yorumları",
+        "movie_write_review": "Yorum Yaz",
+        "movie_your_rating": "Puanınız:",
+        "movie_share_thoughts": "Düşüncelerinizi paylaşın...",
+        "movie_cancel": "İptal",
+        "movie_post_review": "Yorumu Gönder",
+        "movie_spoiler": "Spoiler İçeriyor",
+        "movie_spoiler_warning": "Spoiler - Görmek için tıkla",
+        "movie_first_review": "İlk yorumu siz yapın!",
+        "movie_reply": "Yanıtla",
+        "movie_watchlist_add": "Watchlist'e Ekle",
+        "movie_watchlist_added": "Watchlist'te ✓",
+        "movie_watched": "Filmi İzledim",
+        "movie_watched_done": "İzlendi ✓",
+        "movie_no_summary": "Özet bulunmamaktadır.",
+        
+        "watchlist_title": "İzleme Listesi",
+        "watchlist_subtitle": "İzlemek istediğiniz filmler.",
+        "watchlist_empty": "İzleme listeniz boş",
+        "watchlist_empty_desc": "Film detay sayfasından filmleri listenize ekleyin.",
+        
+        "search_title": "Arama Sonuçları",
+        "search_results_for": "araması için sonuçlar",
+        "search_no_results": "Sonuç bulunamadı",
+        
+        "login_title": "Giriş Yap",
+        "login_email": "E-posta",
+        "login_password": "Şifre",
+        "login_button": "Giriş Yap",
+        "login_register": "Kayıt Ol",
+        "login_no_account": "Hesabınız yok mu?",
+        
+        "welcome": "Hoşgeldiniz!",
+        "login_prompt_msg": "Giriş yaparak tüm özelliklere erişin.",
+        "login_register": "Giriş Yap / Kayıt Ol",
+
+        "you_tag": "Sen",
+        "loading_error": "Yorumlar yüklenirken bir hata oluştu."
     },
     "en": {
         "nav_feed": "Feed",
@@ -59,6 +120,7 @@ TRANSLATIONS = {
         "nav_welcome": "Welcome!",
         "nav_welcome_sub": "Sign in to access all features.",
         "nav_login_reg": "Sign In / Register",
+        "nav_top250": "Top 250",
         
         "modal_title": "Membership Required",
         "modal_desc": "You need to log in or create a free account to use this feature.",
@@ -72,6 +134,18 @@ TRANSLATIONS = {
         "dash_add_list": "Add to List",
         "dash_categories": "Categories",
         "view_all": "View All",
+        
+        "categories": "Categories",
+        "cat_action": "Action",
+        "cat_comedy": "Comedy",
+        "cat_horror": "Horror",
+        "cat_scifi": "Sci-Fi",
+        "cat_romance": "Romance",
+        "cat_animation": "Animation",
+        "cat_thriller": "Thriller",
+        "cat_drama": "Drama",
+        "cat_war": "War",
+        "cat_music": "Music",
         
         "curators_title": "Top Curators",
         "curators_desc": "The most dedicated voices in the CineRate community.",
@@ -89,6 +163,54 @@ TRANSLATIONS = {
         "archive_subtitle": "Your completed cinematic journey.",
         "archive_empty_title": "Archive is empty",
         "archive_empty_desc": "Movies you finish watching will appear here for your history.",
-        "btn_explore": "Explore Movies"
+        "archive_total": "Total",
+        "btn_explore": "Explore Movies",
+        
+        "top250_title": "Top 250 Films",
+        "top250_desc": "The highest rated 250 films by TMDB score.",
+        "top250_all": "All",
+        "top250_showing": "films showing",
+        "top250_no_results": "No films found in this category",
+        "top250_try_other": "Try a different category.",
+        
+        "movie_summary": "Synopsis",
+        "movie_reviews": "Audience Reflections",
+        "movie_write_review": "Write a Review",
+        "movie_your_rating": "Your Rating:",
+        "movie_share_thoughts": "Share your reflections...",
+        "movie_cancel": "Cancel",
+        "movie_post_review": "Post Review",
+        "movie_spoiler": "Contains Spoiler",
+        "movie_spoiler_warning": "Spoiler - Click to reveal",
+        "movie_first_review": "Be the first to review!",
+        "movie_reply": "Reply",
+        "movie_watchlist_add": "Add to Watchlist",
+        "movie_watchlist_added": "In Watchlist ✓",
+        "movie_watched": "Mark as Watched",
+        "movie_watched_done": "Watched ✓",
+        "movie_no_summary": "No synopsis available.",
+        
+        "watchlist_title": "Watchlist",
+        "watchlist_subtitle": "Films you want to watch.",
+        "watchlist_empty": "Your watchlist is empty",
+        "watchlist_empty_desc": "Add films from movie detail pages.",
+        
+        "search_title": "Search Results",
+        "search_results_for": "results for",
+        "search_no_results": "No results found",
+        
+        "login_title": "Sign In",
+        "login_email": "Email",
+        "login_password": "Password",
+        "login_button": "Sign In",
+        "login_register": "Register",
+        "login_no_account": "Don't have an account?",
+        
+        "welcome": "Welcome!",
+        "login_prompt_msg": "Sign in to access all features.",
+        "login_register": "Sign In / Register",
+
+        "you_tag": "You",
+        "loading_error": "An error occurred while loading reviews."
     }
 }

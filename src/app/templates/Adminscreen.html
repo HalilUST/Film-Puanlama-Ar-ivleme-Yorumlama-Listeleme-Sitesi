@@ -114,10 +114,14 @@
     <span class="material-symbols-outlined">arrow_back</span>
     <span class="font-body font-medium">Dashboard'a Dön</span>
 </a>
-<!-- Active State: Reviews -->
-<a class="flex items-center gap-3 px-4 py-3 text-amber-700 dark:text-amber-400 font-semibold border-r-4 border-amber-600 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/20" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rate_review</span>
-<span class="font-body font-semibold">Reviews</span>
+<!-- Active State: Users -->
+<a class="flex items-center gap-3 px-4 py-3 text-amber-700 dark:text-amber-400 font-semibold border-r-4 border-amber-600 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/20" href="#users-section" onclick="showSection('users')">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-body font-semibold">Kullanıcılar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg" href="#reviews-section" onclick="showSection('reviews')">
+<span class="material-symbols-outlined">rate_review</span>
+<span class="font-body font-medium">Tüm Yorumlar</span>
 </a>
 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg" href="#">
 <span class="material-symbols-outlined">settings</span>
@@ -126,10 +130,10 @@
 </nav>
 <div class="mt-auto px-6 border-t border-slate-200 pt-6">
 <div class="flex items-center gap-3">
-<img class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="Admin User Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbmEToY9fY5u41MawixuNvYbORhEY_zr7_4CKgRsR74d79Qh80IIfEjz7kY2dxaFlkG4pXtmC7D2GGYAg0XxE8ZUO_UuWuQyrnC0qqHdRlQ9xI2B3VttK4RpXfQyeOVaH7nzqHLBaRhBYAJJgwWb9-bQf_bZTAdo6x0RsuUvGmSIT3jqKafPzPECwXekPGyL_QJEYBZ6wdxTfmR0lQNhOHz3Vx2Sm2XLuW735j0N2ec7zlOMQAM2lJOOlOAAq4pVIOA8td89HxRWta"/>
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">{{ admin_user.username[0] | upper }}</div>
 <div class="overflow-hidden">
-<p class="text-sm font-bold truncate">Julian Vane</p>
-<p class="text-xs text-secondary truncate">Lead Curator</p>
+<p class="text-sm font-bold truncate">{{ admin_user.username }}</p>
+<p class="text-xs text-secondary truncate">Admin/Geliştirici</p>
 </div>
 </div>
 </div>
@@ -159,10 +163,11 @@
 <!-- Main Content Canvas -->
 <main class="ml-64 pt-16 min-h-screen bg-surface">
 <div class="p-12 max-w-7xl mx-auto">
-<!-- Page Header -->
+<!-- USERS SECTION -->
+<div id="users-section">
 <div class="mb-12">
-<h2 class="text-4xl font-bold text-on-surface tracking-tight mb-2">Review Moderation</h2>
-<p class="text-secondary font-body">Manage flagged audience critiques and maintain cinematic integrity.</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tight mb-2">Kullanıcı Yönetimi</h2>
+<p class="text-secondary font-body">Kayıtlı kullanıcıları ve sistem loglarını yönetin.</p>
 </div>
 <!-- Stats Ribbon (Bento Lite) -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
@@ -267,6 +272,88 @@
 </div>
 </div>
     </div>
+</div><!-- close users-section -->
+
+    <!-- ALL REVIEWS SECTION -->
+    <div id="reviews-section" style="display:none;">
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-bold text-on-surface tracking-tight mb-2">Tüm Yorumlar</h2>
+                <p class="text-secondary font-body">Sitedeki tüm kullanıcı yorumlarını yönetin. <span class="font-bold text-on-surface">{{ tum_yorumlar|length }}</span> yorum</p>
+            </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-low/50">
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline">Kullanıcı</th>
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline">Film</th>
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline">Yorum</th>
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline">Puan</th>
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline">Tarih</th>
+                        <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-outline text-right">Sil</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-container" id="reviews-tbody">
+                    {% for yorum in tum_yorumlar %}
+                    <tr class="hover:bg-surface-container-low transition-colors review-row" id="yorum-row-{{ yorum.id }}" data-page="{{ ((loop.index - 1) // 10) + 1 }}" {% if loop.index > 10 %}style="display:none;"{% endif %}>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-secondary-container/30 flex items-center justify-center font-bold text-secondary text-xs">{{ yorum.author.username[:2] | upper }}</div>
+                                <span class="text-sm font-bold text-on-surface">{{ yorum.author.username }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="/film/{{ yorum.movie_id }}" class="text-sm text-primary hover:underline font-medium">{{ yorum.movie.title if yorum.movie else 'Bilinmeyen' }}</a>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs">
+                            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-2">{{ yorum.comment }}</p>
+                            {% if yorum.is_spoiler %}
+                            <span class="text-[9px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-block">Spoiler</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if yorum.rating %}
+                            <span class="text-sm font-bold text-primary">{{ yorum.rating }}/10</span>
+                            {% else %}
+                            <span class="text-xs text-outline">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-outline">{{ yorum.date_posted.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="adminDeleteReview({{ yorum.id }})" class="px-3 py-1.5 bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ml-auto">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                                Sil
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-outline text-sm">Henüz hiç yorum yapılmamış.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            {% set total_pages = ((tum_yorumlar|length - 1) // 10) + 1 if tum_yorumlar|length > 0 else 1 %}
+            {% if tum_yorumlar|length > 10 %}
+            <div class="px-8 py-6 border-t border-surface-container flex justify-between items-center bg-surface-container-low/20">
+                <p class="text-xs text-outline font-medium" id="reviews-page-info">Sayfa 1 / {{ total_pages }}</p>
+                <div class="flex items-center gap-2" id="reviews-pagination">
+                    <button onclick="goToReviewPage('prev')" class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/30 text-outline hover:bg-white transition-all">
+                        <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    </button>
+                    {% for p in range(1, total_pages + 1) %}
+                    <button onclick="goToReviewPage({{ p }})" class="review-page-btn w-8 h-8 flex items-center justify-center rounded text-xs font-bold transition-all {% if p == 1 %}bg-primary text-white{% else %}border border-outline-variant/30 text-outline hover:bg-white{% endif %}" data-page="{{ p }}">{{ p }}</button>
+                    {% endfor %}
+                    <button onclick="goToReviewPage('next')" class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/30 text-outline hover:bg-white transition-all">
+                        <span class="material-symbols-outlined text-lg">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
     
     <div class="mt-8">
         <h2 class="text-xl font-bold text-on-surface mb-4">Sistem Geçmişi (Loglar)</h2>
@@ -303,4 +390,69 @@
 </div>
 </div>
 </main>
+<script>
+function showSection(section) {
+    document.getElementById('users-section').style.display = section === 'users' ? 'block' : 'none';
+    document.getElementById('reviews-section').style.display = section === 'reviews' ? 'block' : 'none';
+    
+    // Update sidebar active states
+    const links = document.querySelectorAll('nav a');
+    links.forEach(link => {
+        const href = link.getAttribute('href') || '';
+        if ((section === 'users' && href.includes('users')) || (section === 'reviews' && href.includes('reviews'))) {
+            link.className = 'flex items-center gap-3 px-4 py-3 text-amber-700 dark:text-amber-400 font-semibold border-r-4 border-amber-600 dark:border-amber-500 bg-amber-50/50 dark:bg-amber-900/20';
+        } else if (!href.includes('dashboard') && !href.includes('settings') && href !== '#') {
+            link.className = 'flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg';
+        }
+    });
+}
+
+async function adminDeleteReview(id) {
+    if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
+    try {
+        const res = await fetch(`/api/admin/yorumlar/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+            const row = document.getElementById(`yorum-row-${id}`);
+            if (row) {
+                row.style.transition = 'opacity 0.3s, transform 0.3s';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => row.remove(), 300);
+            }
+        } else {
+            alert(data.hata || 'Silinemedi');
+        }
+    } catch(e) {
+        alert('Bağlantı hatası');
+    }
+}
+
+let currentReviewPage = 1;
+function goToReviewPage(page) {
+    const rows = document.querySelectorAll('.review-row');
+    const pageButtons = document.querySelectorAll('.review-page-btn');
+    const totalPages = pageButtons.length;
+    
+    if (page === 'prev') page = Math.max(1, currentReviewPage - 1);
+    else if (page === 'next') page = Math.min(totalPages, currentReviewPage + 1);
+    
+    currentReviewPage = page;
+    
+    rows.forEach(row => {
+        row.style.display = parseInt(row.getAttribute('data-page')) === page ? '' : 'none';
+    });
+    
+    pageButtons.forEach(btn => {
+        if (parseInt(btn.getAttribute('data-page')) === page) {
+            btn.className = 'review-page-btn w-8 h-8 flex items-center justify-center rounded text-xs font-bold transition-all bg-primary text-white';
+        } else {
+            btn.className = 'review-page-btn w-8 h-8 flex items-center justify-center rounded text-xs font-bold transition-all border border-outline-variant/30 text-outline hover:bg-white';
+        }
+    });
+    
+    const info = document.getElementById('reviews-page-info');
+    if (info) info.textContent = `Sayfa ${page} / ${totalPages}`;
+}
+</script>
 </body></html>

@@ -6,6 +6,11 @@ watchlist = db.Table('watchlist',
     db.Column('movie_id', db.Integer, db.ForeignKey('movie.id'), primary_key=True)
 )
 
+watched = db.Table('watched',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('movie_id', db.Integer, db.ForeignKey('movie.id'), primary_key=True)
+)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
@@ -16,6 +21,8 @@ class User(db.Model):
     reviews = db.relationship('Review', backref='author', lazy=True)
     saved_movies = db.relationship('Movie', secondary=watchlist, lazy='subquery',
         backref=db.backref('saved_by', lazy=True))
+    watched_movies = db.relationship('Movie', secondary=watched, lazy='subquery',
+        backref=db.backref('watched_by', lazy=True))
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)

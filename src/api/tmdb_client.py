@@ -114,3 +114,39 @@ def ture_gore_filmleri_getir(tur_id):
     except Exception as e:
         print(f"Tür Filtreleme Hatası: {e}")
         return []
+
+def en_iyi_filmleri_cek(sayfa_sayisi=13):
+    """TMDB top_rated endpoint'inden en yüksek puanlı filmleri çeker."""
+    tum_filmler = []
+    try:
+        for sayfa in range(1, sayfa_sayisi + 1):
+            adres = f"{TEMEL_ADRES}/movie/top_rated"
+            parametreler = {
+                "api_key": API_ANAHTARI,
+                "language": "tr-TR",
+                "page": sayfa
+            }
+            cevap = requests.get(adres, params=parametreler)
+            cevap.raise_for_status()
+            ham_filmler = cevap.json().get("results", [])
+            tum_filmler.extend(ham_filmler)
+        
+        # Sort by vote_average descending, then by vote_count descending as tiebreaker
+        tum_filmler.sort(key=lambda f: (f.get("vote_average", 0), f.get("vote_count", 0)), reverse=True)
+        
+        temiz_liste = []
+        for i, film in enumerate(tum_filmler):
+            afis = f"https://image.tmdb.org/t/p/w500{film.get('poster_path')}" if film.get("poster_path") else None
+            temiz_liste.append({
+                "id": film.get("id"),
+                "film_adi": film.get("title"),
+                "ozet": film.get("overview"),
+                "afis_yolu": afis,
+                "puan": film.get("vote_average"),
+                "sira": i + 1,
+                "genre_ids": film.get("genre_ids", [])
+            })
+        return temiz_liste
+    except requests.exceptions.RequestException as hata:
+        print(f"Top Rated Hatası: {hata}")
+        return []

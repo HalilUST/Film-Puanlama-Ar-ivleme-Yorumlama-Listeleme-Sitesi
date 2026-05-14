@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Top 250 Films | CineRate{% endblock %}
+
+{% block extra_head %}
+<style>
+    .rank-gold { background: linear-gradient(135deg, #ffc24a, #e5a50a); color: #1a1c1f; }
+    .rank-silver { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #1a1c1f; }
+    .rank-bronze { background: linear-gradient(135deg, #cd7f32, #a0622e); color: #1a1c1f; }
+    .rank-default { background: rgba(255,255,255,0.05); color: #e2e2e6; }
+    .film-row { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .film-row:hover { background: rgba(255, 194, 74, 0.04); transform: translateX(4px); }
+    .filter-btn { transition: all 0.25s ease; }
+    .filter-btn.active { background: linear-gradient(135deg, #ffc24a, #e5a50a); color: #1a1c1f; border-color: transparent; }
+    .filter-btn:not(.active):hover { background: rgba(255, 194, 74, 0.1); border-color: rgba(255, 194, 74, 0.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="w-full pt-28 pb-32 px-6 md:px-12">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-1 h-6 cinematic-gradient rounded-full"></div>
+                <h2 class="text-xs font-label uppercase tracking-[0.25em] text-primary font-bold">CineRate</h2>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-headline font-bold text-white mb-3" data-translate="top250_title">Top 250 Films</h1>
+            <p class="text-slate-500 text-sm" data-translate="top250_desc">TMDB puanına göre en yüksek puanlı 250 film.</p>
+        </div>
+
+        <!-- Genre Filter Bar -->
+        <div class="mb-8 flex flex-wrap gap-2">
+            <button class="filter-btn active px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider" data-genre="all" onclick="filterGenre('all', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">movie_filter</span>
+                    <span data-translate="top250_all">Tümü</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="28" onclick="filterGenre('28', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">local_fire_department</span>
+                    <span data-translate="cat_action">Aksiyon</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="35" onclick="filterGenre('35', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">sentiment_very_satisfied</span>
+                    <span data-translate="cat_comedy">Komedi</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="27" onclick="filterGenre('27', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">skull</span>
+                    <span data-translate="cat_horror">Korku</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="878" onclick="filterGenre('878', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">rocket_launch</span>
+                    <span data-translate="cat_scifi">Bilim Kurgu</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="10749" onclick="filterGenre('10749', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">favorite</span>
+                    <span data-translate="cat_romance">Romantik</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="16" onclick="filterGenre('16', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">animation</span>
+                    <span data-translate="cat_animation">Animasyon</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="53" onclick="filterGenre('53', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">visibility</span>
+                    <span data-translate="cat_thriller">Gerilim</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="18" onclick="filterGenre('18', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">theater_comedy</span>
+                    <span data-translate="cat_drama">Dram</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="10752" onclick="filterGenre('10752', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">swords</span>
+                    <span data-translate="cat_war">Savaş</span>
+                </span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400" data-genre="10402" onclick="filterGenre('10402', this)">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[14px]">music_note</span>
+                    <span data-translate="cat_music">Müzik</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Result Count -->
+        <p id="result-count" class="text-slate-500 text-xs mb-4 font-bold uppercase tracking-wider">{{ filmler|length }} film gösteriliyor</p>
+
+        <!-- Film List -->
+        <div id="film-list" class="space-y-2">
+            {% for film in filmler %}
+            <a href="/film/{{ film.id }}" class="film-row flex items-center gap-5 p-4 rounded-2xl border border-white/5 group" data-genres="{{ film.genre_ids | join(',') }}">
+                <!-- Rank -->
+                <div class="film-rank w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 shadow-lg
+                    {% if film.sira == 1 %}rank-gold{% elif film.sira == 2 %}rank-silver{% elif film.sira == 3 %}rank-bronze{% else %}rank-default{% endif %}">
+                    {{ film.sira }}
+                </div>
+
+                <!-- Poster -->
+                <div class="w-12 h-[72px] rounded-lg overflow-hidden shrink-0 bg-surface-container border border-white/5">
+                    {% if film.afis_yolu %}
+                    <img src="{{ film.afis_yolu }}" class="w-full h-full object-cover" alt="{{ film.film_adi }}">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-slate-700 text-xl">movie</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm md:text-base font-bold text-slate-200 group-hover:text-primary transition-colors truncate">
+                        {{ film.film_adi }}
+                    </h3>
+                    {% if film.ozet %}
+                    <p class="text-xs text-slate-500 truncate mt-1 hidden md:block">{{ film.ozet[:100] }}...</p>
+                    {% endif %}
+                </div>
+
+                <!-- Rating -->
+                <div class="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-xl border border-primary/20 shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings:'FILL' 1;">star</span>
+                    <span class="text-base font-bold text-primary">{{ film.puan | round(1) }}</span>
+                    <span class="text-[10px] text-slate-500">/10</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- No Results -->
+        <div id="no-results" class="hidden text-center py-16">
+            <span class="material-symbols-outlined text-5xl text-slate-600 mb-4 block">search_off</span>
+            <h3 class="text-lg font-headline font-bold text-slate-400" data-translate="top250_no_results">Bu kategoride film bulunamadı</h3>
+            <p class="text-sm text-slate-600 mt-2" data-translate="top250_try_other">Farklı bir kategori deneyin.</p>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function filterGenre(genreId, clickedBtn) {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.add('text-slate-400');
+        });
+        clickedBtn.classList.add('active');
+        clickedBtn.classList.remove('text-slate-400');
+
+        const rows = document.querySelectorAll('.film-row');
+        const noResults = document.getElementById('no-results');
+        let visibleCount = 0;
+        let rank = 0;
+
+        rows.forEach(row => {
+            const genres = row.getAttribute('data-genres');
+            if (genreId === 'all' || (genres && genres.split(',').includes(genreId))) {
+                row.style.display = 'flex';
+                visibleCount++;
+                rank++;
+                // Update rank number
+                const rankEl = row.querySelector('.film-rank');
+                if (rankEl) {
+                    rankEl.textContent = rank;
+                    rankEl.className = 'film-rank w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 shadow-lg ';
+                    if (rank === 1) rankEl.classList.add('rank-gold');
+                    else if (rank === 2) rankEl.classList.add('rank-silver');
+                    else if (rank === 3) rankEl.classList.add('rank-bronze');
+                    else rankEl.classList.add('rank-default');
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update count
+        document.getElementById('result-count').textContent = visibleCount + ' film gösteriliyor';
+
+        // Show/hide no results
+        if (visibleCount === 0) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}
